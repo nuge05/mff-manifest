@@ -167,6 +167,7 @@ select:focus{outline:none;border-color:#1b2b3c}
       <div class="tag-list" id="stu-tags"><span class="none-lbl">None added</span></div>
       <div class="add-row">
         <input class="nm" id="sn" placeholder="Last name" onkeydown="if(event.key==='Enter')addPerson('S')">
+        <input class="nm" id="sf" placeholder="First name" onkeydown="if(event.key==='Enter')addPerson('S')" style="width:110px">
         <input class="wtin" id="sw" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addPerson('S')">
         <input class="wtin" id="sh" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addPerson('S')">
         <button onclick="addPerson('S')">+ Add</button>
@@ -186,6 +187,7 @@ select:focus{outline:none;border-color:#1b2b3c}
       <div class="tag-list" id="inst-tags"><span class="none-lbl">None added</span></div>
       <div class="add-row">
         <input class="nm" id="in" placeholder="Last name" onkeydown="if(event.key==='Enter')addPerson('I')">
+        <input class="nm" id="if" placeholder="First name" onkeydown="if(event.key==='Enter')addPerson('I')" style="width:110px">
         <input class="wtin" id="iw" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addPerson('I')">
         <input class="wtin" id="ih" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addPerson('I')">
         <button onclick="addPerson('I')">+ Add</button>
@@ -205,11 +207,52 @@ select:focus{outline:none;border-color:#1b2b3c}
 </h3>
     <div class="tag-list" id="strap-tags"><span class="none-lbl">None added</span></div>
     <div class="add-row">
-      <input class="nm" id="strn" placeholder="Strap name" onkeydown="if(event.key==='Enter')addStrap()">
+      <input class="nm" id="strn" placeholder="Last name" onkeydown="if(event.key==='Enter')addStrap()">
+      <input class="nm" id="strf" placeholder="First name" onkeydown="if(event.key==='Enter')addStrap()" style="width:110px">
       <input class="wtin" id="strw" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addStrap()">
       <input class="wtin" id="strh" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addStrap()">
       <button onclick="addStrap()">+ Add</button>
       <button onclick="importCSV('T')" title="Import from CSV">&#128196; Import CSV</button>
+    </div>
+  </div>
+  <div class="roster-col">
+    <h3 style="display:flex;align-items:center;justify-content:space-between">Flight-1
+      <span style="display:flex;gap:4px">
+        <button class="sm ghost" onclick="sortRoster('F','name')" title="Sort A-Z">A-Z</button>
+        <button class="sm ghost" onclick="sortRoster('F','wt')" title="Sort by weight">Wt</button>
+        <button class="sm ghost" onclick="sortRoster('F','ht')" title="Sort by height">Ht</button>
+        <button class="sm ghost" onclick="sortRoster('F','fr')" title="Sort by fall rate">FR</button>
+        <button class="sm danger" onclick="clearRoster('F')" title="Clear all Flight-1">Clear all</button>
+      </span>
+    </h3>
+    <div class="tag-list" id="flight1-tags"><span class="none-lbl">None added</span></div>
+    <div class="add-row">
+      <input class="nm" id="f1n" placeholder="Last name" onkeydown="if(event.key==='Enter')addRosterPerson('F')">
+      <input class="nm" id="f1f" placeholder="First name" onkeydown="if(event.key==='Enter')addRosterPerson('F')" style="width:110px">
+      <input class="wtin" id="f1w" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addRosterPerson('F')">
+      <input class="wtin" id="f1h" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addRosterPerson('F')">
+      <button onclick="addRosterPerson('F')">+ Add</button>
+      <button onclick="importCSV('F')" title="Import from CSV">&#128196; Import CSV</button>
+    </div>
+  </div>
+  <div class="roster-col">
+    <h3 style="display:flex;align-items:center;justify-content:space-between">UI
+      <span style="display:flex;gap:4px">
+        <button class="sm ghost" onclick="sortRoster('U','name')" title="Sort A-Z">A-Z</button>
+        <button class="sm ghost" onclick="sortRoster('U','wt')" title="Sort by weight">Wt</button>
+        <button class="sm ghost" onclick="sortRoster('U','ht')" title="Sort by height">Ht</button>
+        <button class="sm ghost" onclick="sortRoster('U','fr')" title="Sort by fall rate">FR</button>
+        <button class="sm danger" onclick="clearRoster('U')" title="Clear all UI">Clear all</button>
+      </span>
+    </h3>
+    <div class="tag-list" id="ui-tags"><span class="none-lbl">None added</span></div>
+    <div class="add-row">
+      <input class="nm" id="uin" placeholder="Last name" onkeydown="if(event.key==='Enter')addRosterPerson('U')">
+      <input class="nm" id="uif" placeholder="First name" onkeydown="if(event.key==='Enter')addRosterPerson('U')" style="width:110px">
+      <input class="wtin" id="uiw" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addRosterPerson('U')">
+      <input class="wtin" id="uih" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addRosterPerson('U')">
+      <button onclick="addRosterPerson('U')">+ Add</button>
+      <button onclick="importCSV('U')" title="Import from CSV">&#128196; Import CSV</button>
     </div>
   </div>
 </div>
@@ -266,7 +309,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
-const db  = { students:[], instructors:[], straps:[], equipment:[], groups:[], mode:'MFF' };
+const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], groups:[], mode:'MFF' };
 
 // ── TABS ──────────────────────────────────────────────────
 function goTab(t) {
@@ -281,12 +324,15 @@ function goTab(t) {
 // ── ROSTER ────────────────────────────────────────────────
 function addPerson(role) {
   const nId = role === 'S' ? 'sn' : 'in';
+  const fId = role === 'S' ? 'sf' : 'if';
   const wId = role === 'S' ? 'sw' : 'iw';
   const hId = role === 'S' ? 'sh' : 'ih';
-  const name = document.getElementById(nId).value.trim();
-  const wt   = parseFloat(document.getElementById(wId).value) || 0;
-  const ht   = parseFloat(document.getElementById(hId).value) || 0;
-  if (!name) { document.getElementById(nId).focus(); return; }
+  const last  = document.getElementById(nId).value.trim();
+  const first = document.getElementById(fId).value.trim();
+  const wt    = parseFloat(document.getElementById(wId).value) || 0;
+  const ht    = parseFloat(document.getElementById(hId).value) || 0;
+  if (!last) { document.getElementById(nId).focus(); return; }
+  const name = first ? `${last}, ${first}` : last;
   const newPerson = { name, wt, ht };
   if (role === 'S') {
     db.students.push(newPerson);
@@ -295,19 +341,51 @@ function addPerson(role) {
     db.instructors.push(newPerson);
   }
   document.getElementById(nId).value = '';
+  document.getElementById(fId).value = '';
   document.getElementById(wId).value = '';
   document.getElementById(hId).value = '';
   document.getElementById(nId).focus();
   redraw();
 }
 
+function listForRole(role) {
+  return role === 'S' ? db.students :
+         role === 'I' ? db.instructors :
+         role === 'T' ? db.straps :
+         role === 'F' ? db.flight1 :
+         role === 'U' ? db.ui : null;
+}
+function addRosterPerson(role) {
+  const prefix = role === 'F' ? 'f1' : 'ui';
+  const last  = document.getElementById(prefix + 'n').value.trim();
+  const first = document.getElementById(prefix + 'f').value.trim();
+  const wt    = parseFloat(document.getElementById(prefix + 'w').value) || 0;
+  const ht    = parseFloat(document.getElementById(prefix + 'h').value) || 0;
+  if (!last) { document.getElementById(prefix + 'n').focus(); return; }
+  const name = first ? `${last}, ${first}` : last;
+  listForRole(role).push({ name, wt, ht });
+  document.getElementById(prefix + 'n').value = '';
+  document.getElementById(prefix + 'f').value = '';
+  document.getElementById(prefix + 'w').value = '';
+  document.getElementById(prefix + 'h').value = '';
+  document.getElementById(prefix + 'n').focus();
+  redraw();
+}
+function removeRosterPerson(role, i) {
+  listForRole(role).splice(i, 1);
+  redraw();
+}
+
 function addStrap() {
-  const name = document.getElementById('strn').value.trim();
-  const wt   = parseFloat(document.getElementById('strw').value) || 0;
-  const ht   = parseFloat(document.getElementById('strh').value) || 0;
-  if (!name) { document.getElementById('strn').focus(); return; }
+  const last  = document.getElementById('strn').value.trim();
+  const first = document.getElementById('strf').value.trim();
+  const wt    = parseFloat(document.getElementById('strw').value) || 0;
+  const ht    = parseFloat(document.getElementById('strh').value) || 0;
+  if (!last) { document.getElementById('strn').focus(); return; }
+  const name = first ? `${last}, ${first}` : last;
   db.straps.push({ name, wt, ht });
   document.getElementById('strn').value = '';
+  document.getElementById('strf').value = '';
   document.getElementById('strw').value = '';
   document.getElementById('strh').value = '';
   document.getElementById('strn').focus();
@@ -339,6 +417,43 @@ function renderRoster() {
   };
   renderTags(db.students,    'stu-tags',  'S');
   renderTags(db.instructors, 'inst-tags', 'I');
+
+  // Render Flight-1
+  const f1El = document.getElementById('flight1-tags');
+  if (f1El) {
+    if (!db.flight1.length) { f1El.innerHTML = '<span class="none-lbl">None added</span>'; }
+    else {
+      f1El.innerHTML = db.flight1.map((p, i) => {
+        const fr = (p.wt && p.ht) ? (p.wt / p.ht).toFixed(2) : '';
+        return `<span class="tag" id="tag-F-${i}">
+          <span class="tag-name">${p.name}</span>
+          <span class="wt">${p.wt ? p.wt+'lbs' : ''}</span>
+          ${p.ht ? `<span class="wt">${p.ht}"</span>` : ''}
+          ${fr ? `<span class="wt" style="color:#555">FR:${fr}</span>` : ''}
+          <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editRosterItem('F',${i})" title="Edit">&#9998;</span>
+          <span class="x" onclick="removeRosterPerson('F',${i})">&#x2715;</span>
+        </span>`;
+      }).join('');
+    }
+  }
+  // Render UI
+  const uiEl = document.getElementById('ui-tags');
+  if (uiEl) {
+    if (!db.ui.length) { uiEl.innerHTML = '<span class="none-lbl">None added</span>'; }
+    else {
+      uiEl.innerHTML = db.ui.map((p, i) => {
+        const fr = (p.wt && p.ht) ? (p.wt / p.ht).toFixed(2) : '';
+        return `<span class="tag" id="tag-U-${i}">
+          <span class="tag-name">${p.name}</span>
+          <span class="wt">${p.wt ? p.wt+'lbs' : ''}</span>
+          ${p.ht ? `<span class="wt">${p.ht}"</span>` : ''}
+          ${fr ? `<span class="wt" style="color:#555">FR:${fr}</span>` : ''}
+          <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editRosterItem('U',${i})" title="Edit">&#9998;</span>
+          <span class="x" onclick="removeRosterPerson('U',${i})">&#x2715;</span>
+        </span>`;
+      }).join('');
+    }
+  }
 
   const stEl = document.getElementById('strap-tags');
   if (!db.straps.length) { stEl.innerHTML = '<span class="none-lbl">None added</span>'; }
@@ -431,9 +546,10 @@ function setF(gi, si, f, val) { db.groups[gi].slots[si][f] = val; redraw(); }
 
 function pWt(name, list) { const p = list.find(x => x.name === name); return p ? p.wt : 0; }
 function slotWt(sl) {
-  const uiWt = pWt(sl.ui, db.instructors) || pWt(sl.ui, db.straps) || pWt(sl.ui, db.equipment);
-  return pWt(sl.stu, db.students) + pWt(sl.inst, db.instructors) + uiWt +
-         pWt(sl.tm, db.instructors) + pWt(sl.pass, db.students);
+  const uiWt = pWt(sl.ui, db.instructors) || pWt(sl.ui, db.straps) || pWt(sl.ui, db.flight1) || pWt(sl.ui, db.ui) || pWt(sl.ui, db.equipment);
+  const instWt = pWt(sl.inst, db.instructors) || pWt(sl.inst, db.flight1) || pWt(sl.inst, db.ui);
+  const tmWt = pWt(sl.tm, db.instructors) || pWt(sl.tm, db.flight1) || pWt(sl.tm, db.ui);
+  return pWt(sl.stu, db.students) + instWt + uiWt + tmWt + pWt(sl.pass, db.students);
 }
 function grpTot(g)  { return g.slots.reduce((a, sl) => a + slotWt(sl), 0); }
 function mjCnt(g)   { return g.slots.filter(sl => sl.stu).length; }
@@ -455,6 +571,18 @@ function mkStrapOpts(sel, gi) {
     opts += '<optgroup label="— Straps —">' +
       db.straps.filter(s => s.name === sel || !used.has(s.name))
         .map(s => `<option value="${s.name}"${s.name === sel ? ' selected' : ''}>${s.name}</option>`).join('') +
+      '</optgroup>';
+  }
+  if (db.flight1.length) {
+    opts += '<optgroup label="— Flight-1 —">' +
+      db.flight1.filter(p => p.name === sel || !used.has(p.name))
+        .map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.flight1)}</option>`).join('') +
+      '</optgroup>';
+  }
+  if (db.ui.length) {
+    opts += '<optgroup label="— UI —">' +
+      db.ui.filter(p => p.name === sel || !used.has(p.name))
+        .map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.ui)}</option>`).join('') +
       '</optgroup>';
   }
   return opts;
@@ -488,7 +616,31 @@ function shortStuLabel(p) {
 function mkOpts(list, sel, gi, field) {
   const used = gi !== undefined ? usedInGroup(gi, field) : new Set();
   const isStudent = list === db.students;
-  return `<option value="">—</option>` +
+  const isInstructor = list === db.instructors;
+  let opts = '<option value="">—</option>';
+  if (isInstructor) {
+    // Combined dropdown: Instructors + Flight-1 + UI
+    if (db.instructors.length) {
+      opts += '<optgroup label="— Instructors —">' +
+        db.instructors.filter(p => p.name === sel || !used.has(p.name))
+          .map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.instructors)}</option>`).join('') +
+        '</optgroup>';
+    }
+    if (db.flight1.length) {
+      opts += '<optgroup label="— Flight-1 —">' +
+        db.flight1.filter(p => p.name === sel || !used.has(p.name))
+          .map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.flight1)}</option>`).join('') +
+        '</optgroup>';
+    }
+    if (db.ui.length) {
+      opts += '<optgroup label="— UI —">' +
+        db.ui.filter(p => p.name === sel || !used.has(p.name))
+          .map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.ui)}</option>`).join('') +
+        '</optgroup>';
+    }
+    return opts;
+  }
+  return opts +
     list.filter(p => p.name === sel || !used.has(p.name))
         .map((p, i) => {
           let label;
@@ -658,10 +810,33 @@ function redraw() {
   renderEquipment();
   renderManifest();
   updateSummary();
+  saveDB();
 }
 
-// Pre-load instructors
-db.instructors = [
+function saveDB() {
+  try {
+    localStorage.setItem('mff_db_current', JSON.stringify(db));
+  } catch(e) {}
+}
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem('mff_db_current');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved.students)    db.students    = saved.students;
+    if (saved.instructors) db.instructors = saved.instructors;
+    if (saved.straps)      db.straps      = saved.straps;
+    if (saved.flight1)     db.flight1     = saved.flight1;
+    if (saved.ui)          db.ui          = saved.ui;
+    if (saved.equipment)   db.equipment   = saved.equipment;
+    if (saved.groups)      db.groups      = saved.groups;
+    if (saved.mode)        db.mode        = saved.mode;
+  } catch(e) {}
+}
+
+// Pre-load instructors only if nothing in storage
+if (!db.instructors.length) db.instructors = [
   {name:"Anderson, OJ",wt:230},
   {name:"Andrews, Greg",wt:210},
   {name:"Bathhurst, Rob",wt:195},
@@ -708,8 +883,8 @@ db.instructors = [
   {name:"Zayas, Frank",wt:165}
 ];
 
-// Pre-load students
-db.students = [
+// Pre-load students only if nothing in storage
+if (!db.students.length) db.students = [
   {name:"Watters, John",wt:155},
   {name:"Wiens, Evan",wt:160},
   {name:"Mcclellan, Logan",wt:160},
@@ -736,8 +911,11 @@ db.students = [
   {name:"Nordstrom, Valentino",wt:210}
 ];
 
-// Pre-load equipment from attached sheet
-db.equipment = [
+// Load saved data from localStorage (overrides defaults)
+loadDB();
+
+// Pre-load equipment only if nothing loaded from storage
+if (!db.equipment.length) db.equipment = [
   {name:'CE',wt:100},{name:'CE/O2',wt:106},{name:'HAWG',wt:70},{name:'LBE',wt:16},
   {name:'MJ',wt:50},{name:'MMJ',wt:41},{name:'MTV3',wt:65},{name:'MTV3/CE',wt:110},
   {name:'MTV3/CE/O2',wt:116},{name:'MTV3/O2',wt:72},{name:'NODs',wt:52},{name:'NS',wt:22},
@@ -959,7 +1137,7 @@ function importCSV(role) {
       const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
       let imported = 0;
       let skipped  = 0;
-      const target = role === 'S' ? db.students : role === 'I' ? db.instructors : db.straps;
+      const target = listForRole(role);
 
       lines.forEach(line => {
         const parts = line.split(/,|\t/).map(p => p.trim().replace(/^"|"$/g, ''));
@@ -1007,7 +1185,7 @@ function importCSV(role) {
       });
 
       redraw();
-      const roleLabel = role === 'S' ? 'Students' : role === 'I' ? 'Instructors' : 'Straps';
+      const roleLabel = {S:'Students', I:'Instructors', T:'Straps', F:'Flight-1', U:'UI'}[role];
       alert(roleLabel + ': ' + imported + ' imported' + (skipped ? ', ' + skipped + ' skipped (duplicates or blank).' : '.'));
     };
     reader.readAsText(file);
@@ -1039,11 +1217,13 @@ function reorderStudent(fromIdx, newRosterNum) {
 const sortState = { S: { key: null, asc: true }, I: { key: null, asc: true }, T: { key: null, asc: true } };
 
 function clearRoster(role) {
-  const label = role === 'S' ? 'students' : role === 'I' ? 'instructors' : 'straps';
-  if (!confirm('Clear all ' + label + '? This cannot be undone.')) return;
+  const labels = {S:'students', I:'instructors', T:'straps', F:'Flight-1', U:'UI'};
+  if (!confirm('Clear all ' + labels[role] + '? This cannot be undone.')) return;
   if (role === 'S')      db.students    = [];
   else if (role === 'I') db.instructors = [];
-  else                   db.straps      = [];
+  else if (role === 'T') db.straps      = [];
+  else if (role === 'F') db.flight1     = [];
+  else if (role === 'U') db.ui          = [];
   redraw();
 }
 
@@ -1053,7 +1233,7 @@ function sortRoster(role, key) {
   if (state.key === key) state.asc = !state.asc;
   else { state.key = key; state.asc = true; }
 
-  const list = role === 'S' ? db.students : role === 'I' ? db.instructors : db.straps;
+  const list = listForRole(role);
 
   list.sort((a, b) => {
     let va, vb;
@@ -1077,7 +1257,7 @@ function sortRoster(role, key) {
 
 // ── ROSTER EDIT ───────────────────────────────────────────────
 function editRosterItem(role, i) {
-  const item = role === 'T' ? db.straps[i] : (role === 'S' ? db.students[i] : db.instructors[i]);
+  const item = listForRole(role)[i];
   const tagEl = document.getElementById('tag-' + role + '-' + i);
   if (!tagEl) return;
   const num = role === 'S' ? `<span style="font-weight:bold;color:#1b2b3c;margin-right:3px">${i+1}.</span>` : '';
@@ -1096,9 +1276,9 @@ function saveRosterItem(role, i) {
   const wt   = parseFloat(document.getElementById('edit-wt-' + role + '-' + i).value) || 0;
   const ht   = parseFloat(document.getElementById('edit-ht-' + role + '-' + i).value) || 0;
   if (!name) return alert('Name required');
-  if (role === 'S')      db.students[i]    = { name, wt, ht };
-  else if (role === 'I') db.instructors[i] = { name, wt, ht };
-  else                   db.straps[i]      = { name, wt, ht };
+  // Preserve any extra fields (like rosterNum on students)
+  const existing = listForRole(role)[i];
+  listForRole(role)[i] = { ...existing, name, wt, ht };
   redraw();
 }
 </script>
