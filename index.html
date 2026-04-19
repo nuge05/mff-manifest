@@ -75,8 +75,8 @@ button.add-grp:hover{background:#d2e6f8}
 
 /* GROUP CARDS */
 .grp{background:#fff;border:1px solid #c5cdd8;border-radius:4px;overflow:hidden}
-.grp-hd{background:#1b2b3c;color:#fff;padding:6px 10px;display:flex;align-items:center;justify-content:space-between}
-.grp-letter{font-size:15px;font-weight:bold;margin-right:8px}
+.grp-hd{background:#1b2b3c;color:#fff;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.grp-letter{font-size:14px;font-weight:bold;margin-right:4px;white-space:nowrap}
 .grp-meta{font-size:11px;color:#8ab4d4}
 .grp-hd-btns{display:flex;gap:5px}
 .grp-hd button{font-size:11px;padding:2px 7px;background:transparent;border-color:#4a6a8a;color:#cce}
@@ -232,6 +232,10 @@ select:focus{outline:none;border-color:#1b2b3c}
 <!-- MANIFEST PANEL -->
 <div class="panel" id="tab-manifest">
   <div class="manifest-toolbar">
+    <div style="display:flex;background:#e8edf3;border-radius:4px;padding:2px;gap:2px;margin-right:8px">
+      <button id="mode-mff" onclick="setMode('MFF')" style="background:#1b2b3c;color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:bold;border-radius:3px">MFF</button>
+      <button id="mode-tandem" onclick="setMode('TANDEM')" style="background:transparent;color:#555;border:none;padding:4px 12px;font-size:12px;font-weight:bold;border-radius:3px">Tandem</button>
+    </div>
     <button class="add-grp" onclick="addGroup()">+ Add group</button>
     <span style="font-size:12px;color:#888">Groups A – H max</span>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
@@ -262,7 +266,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
-const db  = { students:[], instructors:[], straps:[], equipment:[], groups:[] };
+const db  = { students:[], instructors:[], straps:[], equipment:[], groups:[], mode:'MFF' };
 
 // ── TABS ──────────────────────────────────────────────────
 function goTab(t) {
@@ -406,7 +410,7 @@ function saveEquip(i) {
 }
 
 // ── GROUPS ────────────────────────────────────────────────
-function newSlot() { return { stu: '', inst: '', ui: '' }; }
+function newSlot() { return { stu: '', inst: '', ui: '', tm: '', pass: '' }; }
 
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
@@ -428,7 +432,8 @@ function setF(gi, si, f, val) { db.groups[gi].slots[si][f] = val; redraw(); }
 function pWt(name, list) { const p = list.find(x => x.name === name); return p ? p.wt : 0; }
 function slotWt(sl) {
   const uiWt = pWt(sl.ui, db.instructors) || pWt(sl.ui, db.straps) || pWt(sl.ui, db.equipment);
-  return pWt(sl.stu, db.students) + pWt(sl.inst, db.instructors) + uiWt;
+  return pWt(sl.stu, db.students) + pWt(sl.inst, db.instructors) + uiWt +
+         pWt(sl.tm, db.instructors) + pWt(sl.pass, db.students);
 }
 function grpTot(g)  { return g.slots.reduce((a, sl) => a + slotWt(sl), 0); }
 function mjCnt(g)   { return g.slots.filter(sl => sl.stu).length; }
@@ -520,7 +525,9 @@ function setGrpPJAJ(gi, field, val) {
   db.groups[gi][field] = val;
   renderManifest();
   updateSummary();
-}function mkEqLabelOpts(sel) {
+}
+
+function mkEqLabelOpts(sel) {
   const fixed = [{name:'MJ',wt:''},{name:'NS',wt:''}];
   const all = [...fixed, ...db.equipment];
   return all.map(e => {
@@ -529,6 +536,26 @@ function setGrpPJAJ(gi, field, val) {
 }
 function setGrpLabel(gi, field, val) {
   db.groups[gi][field] = val;
+  renderManifest();
+  updateSummary();
+}
+
+function setMode(mode) {
+  if (db.groups.length && mode !== db.mode) {
+    if (!confirm('Switching between MFF and Tandem will clear current groups. Continue?')) return;
+    db.groups = [];
+  }
+  db.mode = mode;
+  // Update button styles
+  const mffBtn = document.getElementById('mode-mff');
+  const tdBtn  = document.getElementById('mode-tandem');
+  if (mode === 'MFF') {
+    mffBtn.style.background = '#1b2b3c'; mffBtn.style.color = '#fff';
+    tdBtn.style.background = 'transparent'; tdBtn.style.color = '#555';
+  } else {
+    tdBtn.style.background = '#1b2b3c'; tdBtn.style.color = '#fff';
+    mffBtn.style.background = 'transparent'; mffBtn.style.color = '#555';
+  }
   renderManifest();
   updateSummary();
 }
@@ -546,6 +573,15 @@ function renderManifest() {
 
   grid.innerHTML = db.groups.map((g, gi) => {
     const rows = g.slots.map((sl, si) => {
+      if (db.mode === 'TANDEM') {
+        return `<tr>
+          <td><select onchange="setF(${gi},${si},'tm',this.value)">${mkOpts(db.instructors, sl.tm, gi, 'tm')}</select></td>
+          <td><select onchange="setF(${gi},${si},'pass',this.value)">${mkOpts(db.students, sl.pass, gi, 'pass')}</select></td>
+          <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select></td>
+          <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select></td>
+          <td><button class="sm danger" onclick="removeSlot(${gi},${si})">✕</button></td>
+        </tr>`;
+      }
       return `<tr>
         <td><select onchange="setF(${gi},${si},'stu',this.value)">${mkOpts(db.students, sl.stu, gi, 'stu')}</select></td>
         <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select></td>
@@ -563,8 +599,12 @@ function renderManifest() {
     <div class="grp">
       <div class="grp-hd">
         <div>
-          <span class="grp-letter">GRP ${g.letter}</span><span style="margin-left:8px;font-size:10px;color:#8ab4d4">PJ</span><select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select><span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span><select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'aj',this.value)">${mkPJAJOpts(g.aj)}</select><span class="grp-meta" style="margin-left:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
-          
+          <span class="grp-letter">GRP ${g.letter}</span>
+          <span style="margin-left:8px;font-size:10px;color:#8ab4d4">PJ</span>
+          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
+          <span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span>
+          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'aj',this.value)">${mkPJAJOpts(g.aj)}</select>
+          <span class="grp-meta" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
         </div>
         <div class="grp-hd-btns">
           <button onclick="addSlot(${gi})">+ Row</button>
@@ -574,9 +614,7 @@ function renderManifest() {
       <div style="overflow-x:auto">
       <table style="min-width:400px">
         <thead><tr>
-          <th>Student</th>
-          <th>Instructor</th>
-          <th>UI / VID / Strap</th>
+          ${db.mode === 'TANDEM' ? '<th>TM</th><th>Pass</th><th>Instructor</th><th>Straps</th>' : '<th>Student</th><th>Instructor</th><th>UI / VID / Strap</th>'}
           <th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -588,8 +626,8 @@ function renderManifest() {
         </tr>
         <tfoot>
           <tr>
-            <td style="font-weight:bold;padding:5px 6px">Total jumpers: ${db.groups.reduce((a,g)=>a+g.slots.reduce((b,sl)=>(sl.stu?b+1:b)+(sl.inst?1:0)+(sl.ui?1:0),0),0)}</td>
-            <td colspan="2" style="text-align:right;padding-right:10px">Total weight</td>
+            <td style="font-weight:bold;padding:5px 6px">Total jumpers: ${db.groups.reduce((a,g)=>a+g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0),0)}</td>
+            <td colspan="${db.mode === 'TANDEM' ? 3 : 2}" style="text-align:right;padding-right:10px">Total weight</td>
             <td class="num">${tot} lbs</td>
           </tr>
         </tfoot>
@@ -608,7 +646,7 @@ function updateSummary() {
     jumpers += jumperCnt(g);
   });
   document.getElementById('s-grps').textContent    = db.groups.length;
-  const totalJumpers = db.groups.reduce((a, g) => a + g.slots.filter(sl => sl.stu || sl.inst || sl.ui).length, 0);
+  const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0) + (sl.pass?1:0), 0), 0);
   document.getElementById('s-jumpers').textContent = totalJumpers;
   document.getElementById('s-mj').textContent      = mj;
   document.getElementById('s-ns').textContent      = ns;
@@ -924,39 +962,45 @@ function importCSV(role) {
       const target = role === 'S' ? db.students : role === 'I' ? db.instructors : db.straps;
 
       lines.forEach(line => {
-        // Split on comma or tab
         const parts = line.split(/,|\t/).map(p => p.trim().replace(/^"|"$/g, ''));
         if (!parts.length) return;
 
-        // Skip header rows — if first cell looks like a header word skip it
+        // Skip header rows
         const firstLower = parts[0].toLowerCase();
         if (['name','last','first','student','instructor','strap','last name'].includes(firstLower)) return;
 
-        // Find name and weight — weight is any numeric-looking part
-        let name = '';
-        let wt   = 0;
+        // Separate text parts and numeric parts
+        const textParts = [];
+        const numParts  = [];
+        parts.forEach(p => {
+          if (p === '') return;
+          const n = parseFloat(p);
+          if (!isNaN(n) && /^-?\d+(\.\d+)?$/.test(p)) numParts.push(n);
+          else textParts.push(p);
+        });
 
-        // Try to detect which columns are name vs weight
-        const numIdx = parts.findIndex(p => !isNaN(parseFloat(p)) && p !== '');
-        if (numIdx === -1) {
-          // No weight column — just name
-          name = parts.join(', ').trim();
-        } else if (numIdx === 0) {
-          // Weight first, name after
-          wt   = parseFloat(parts[0]) || 0;
-          name = parts.slice(1).join(', ').trim();
-        } else {
-          // Name first (everything before numeric), weight after
-          name = parts.slice(0, numIdx).join(', ').trim();
-          wt   = parseFloat(parts[numIdx]) || 0;
+        if (!textParts.length) { skipped++; return; }
+        const name = textParts.join(', ').trim();
+
+        // Smart height vs weight detection:
+        // - If 2 numbers: smaller one (< 100) is likely height, bigger is weight
+        // - If 1 number: treat as weight
+        let ht = 0, wt = 0;
+        if (numParts.length >= 2) {
+          const sorted = [...numParts].sort((a,b) => a - b);
+          ht = sorted[0];
+          wt = sorted[sorted.length - 1];
+          // Sanity check — heights typically 40-90 inches, weights 80-350 lbs
+          if (ht > 100) { wt = ht; ht = 0; }
+        } else if (numParts.length === 1) {
+          const n = numParts[0];
+          // Single number — assume weight if > 100, else height
+          if (n > 100) wt = n;
+          else ht = n;
         }
 
-        if (!name) { skipped++; return; }
-
-        // Avoid exact duplicates
         if (target.find(x => x.name.toLowerCase() === name.toLowerCase())) { skipped++; return; }
-
-        target.push({ name, wt });
+        target.push({ name, wt, ht });
         imported++;
       });
 
@@ -1058,4 +1102,3 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
-
