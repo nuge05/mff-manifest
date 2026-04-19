@@ -1,1 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MFF Manifest">
+<meta name="theme-color" content="#1b2b3c">
+<link rel="manifest" href="manifest.json">
+<title>MFF Manifest</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:13px;background:#f0f2f5;color:#111}
+
+/* HEADER */
+.hdr{background:#1b2b3c;color:#fff;padding:10px 18px;display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:15px;letter-spacing:.06em;font-weight:bold}
+.hdr-btns{display:flex;gap:8px}
+
+/* TABS */
+.tab-bar{background:#fff;border-bottom:2px solid #1b2b3c;display:flex;gap:0}
+.tab{padding:9px 20px;font-size:13px;cursor:pointer;color:#555;border-bottom:3px solid transparent;margin-bottom:-2px;font-weight:bold;letter-spacing:.03em}
+.tab:hover{color:#1b2b3c;background:#f4f7fb}
+.tab.active{color:#1b2b3c;border-bottom-color:#1b2b3c;background:#f4f7fb}
+
+/* PANELS */
+.panel{display:none;padding:14px 18px}
+.panel.active{display:block}
+
+/* SUMMARY BAR */
+.summary{background:#1b2b3c;color:#fff;padding:7px 18px;display:flex;gap:24px;flex-wrap:wrap}
+.s-item{display:flex;flex-direction:column}
+.s-lbl{font-size:10px;color:#7a9ab8;text-transform:uppercase;letter-spacing:.06em}
+.s-val{font-size:17px;font-weight:bold}
+
+/* ROSTER COLUMNS */
+.roster-cols{display:flex;gap:24px;flex-wrap:wrap}
+.roster-col{flex:1;min-width:220px}
+.roster-col h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#555;margin-bottom:8px;border-bottom:1px solid #ddd;padding-bottom:4px}
+.tag-list{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;min-height:26px}
+.tag{display:inline-flex;align-items:center;gap:3px;background:#e8edf3;border:1px solid #c5cdd8;border-radius:3px;padding:2px 8px;font-size:12px}
+.tag .wt{color:#666;font-size:11px;margin-left:2px}
+.tag .x{cursor:pointer;color:#aaa;font-size:11px;margin-left:3px}
+.tag .x:hover{color:#c00}
+.add-row{display:flex;gap:6px;align-items:center}
+.add-row input{border:1px solid #bbb;border-radius:3px;padding:5px 7px;font-size:12px}
+.add-row input.nm{width:130px}
+.add-row input.wtin{width:66px}
+.add-row input:focus{outline:none;border-color:#1b2b3c}
+.none-lbl{font-size:11px;color:#bbb}
+
+/* EQUIPMENT TABLE */
+.eq-table-wrap{background:#fff;border:1px solid #c5cdd8;border-radius:4px;overflow:hidden;max-width:480px;margin-bottom:14px}
+.eq-add-row{display:flex;gap:6px;align-items:center;margin-bottom:4px}
+
+/* BUTTONS */
+button{font-size:12px;cursor:pointer;border-radius:3px;padding:5px 11px;border:1px solid #999;background:#fff;color:#111}
+button:hover{background:#eaeaea}
+button.primary{background:#1b2b3c;color:#fff;border-color:#1b2b3c}
+button.primary:hover{background:#243548}
+button.sm{padding:2px 8px;font-size:11px}
+button.danger{color:#900;border-color:#c99;background:transparent}
+button.ghost{background:transparent;border-color:#aaa;color:#555}
+button.ghost:hover{background:#eaeaea;color:#111}
+button.danger:hover{background:#fee}
+button.add-grp{background:#e6f0fb;border-color:#6a9ed4;color:#1b2b3c;font-weight:bold}
+button.add-grp:hover{background:#d2e6f8}
+
+/* MANIFEST GRID */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:740px){.grid{grid-template-columns:1fr}}
+.empty-grid{grid-column:1/-1;text-align:center;color:#aaa;padding:44px 20px;background:#fff;border:1px dashed #ccc;border-radius:4px;font-size:13px;line-height:2}
+
+/* GROUP CARDS */
+.grp{background:#fff;border:1px solid #c5cdd8;border-radius:4px;overflow:hidden}
+.grp-hd{background:#1b2b3c;color:#fff;padding:6px 10px;display:flex;align-items:center;justify-content:space-between}
+.grp-letter{font-size:15px;font-weight:bold;margin-right:8px}
+.grp-meta{font-size:11px;color:#8ab4d4}
+.grp-hd-btns{display:flex;gap:5px}
+.grp-hd button{font-size:11px;padding:2px 7px;background:transparent;border-color:#4a6a8a;color:#cce}
+.grp-hd button:hover{background:#253f5a}
+.grp-hd button.danger{border-color:#a55;color:#faa}
+.grp-hd button.danger:hover{background:#4a1515}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse}
+thead th{background:#e4eaf2;font-size:11px;font-weight:bold;color:#444;padding:5px 6px;border-bottom:1px solid #c5cdd8;white-space:nowrap;text-align:left}
+td{padding:4px 6px;border-bottom:1px solid #eee;font-size:12px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f5f8fc}
+td.num{text-align:right;font-family:monospace}
+td.dim{color:#888}
+.counts-row td{background:#edf1f7;font-size:11px;font-weight:bold;border-top:1px solid #c5cdd8;padding:4px 6px}
+tfoot td{background:#dce4ef;font-weight:bold;font-size:12px;padding:5px 6px;border-top:1px solid #adbdcc}
+
+select{font-size:12px;width:100%;border:1px solid #ccc;border-radius:3px;padding:3px 4px;background:#fff}
+select:focus{outline:none;border-color:#1b2b3c}
+
+/* MANIFEST TOOLBAR */
+.manifest-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+
+@media print{
+  body{background:#fff;margin:0}
+  .hdr,.tab-bar,.summary,.hdr-btns,.grp-hd-btns,.manifest-toolbar,.add-row,.eq-add-row,
+  #tab-roster,#tab-equipment{display:none!important}
+  #tab-manifest{display:block!important;padding:4px}
+  .print-page{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px;page-break-after:always}
+  .print-page:last-child{page-break-after:avoid}
+  .grp{break-inside:avoid;border:1px solid #999}
+  .grp-hd{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  select{border:none;appearance:none;-webkit-appearance:none;font-size:11px;padding:2px 0;pointer-events:none}
+  td,th{font-size:10px;padding:3px 5px}
+  button.sm{display:none!important}
+  .counts-row td{font-size:10px}
+  tfoot td{font-size:10px}
+  #grid{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<div id="install-banner" style="display:none;background:#243548;color:#fff;padding:8px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px">
+  <span>&#128640; Install MFF Manifest as an app for offline use</span>
+  <div style="display:flex;gap:8px">
+    <button id="install-btn" class="primary" style="font-size:12px;padding:4px 12px">Install</button>
+    <button onclick="document.getElementById('install-banner').style.display='none'" style="font-size:12px;padding:4px 10px;background:transparent;border-color:#4a6a8a;color:#cce">Dismiss</button>
+  </div>
+</div>
+<div class="hdr">
+  <h1>MFF MANIFEST</h1>
+  <div class="hdr-btns">
+    <button onclick="window.print()">Print</button>
+  </div>
+</div>
+
+<!-- SUMMARY BAR -->
+<div class="summary">
+  <div class="s-item"><span class="s-lbl">Groups</span><span class="s-val" id="s-grps">0</span></div>
+  <div class="s-item"><span class="s-lbl">Total jumpers</span><span class="s-val" id="s-jumpers">0</span></div>
+  <div class="s-item"><span class="s-lbl">Total MJ</span><span class="s-val" id="s-mj">0</span></div>
+  <div class="s-item"><span class="s-lbl">Total NS</span><span class="s-val" id="s-ns">0</span></div>
+  <div class="s-item"><span class="s-lbl">Total acft wt</span><span class="s-val" id="s-wt">0 lbs</span></div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" onclick="goTab('roster')">Roster</div>
+  <div class="tab" onclick="goTab('equipment')">Equipment</div>
+  <div class="tab" onclick="goTab('manifest')">Manifest</div>
+</div>
+
+<!-- ROSTER PANEL -->
+<div class="panel active" id="tab-roster">
+  <div class="roster-cols">
+    <div class="roster-col">
+      <h3 style="display:flex;align-items:center;justify-content:space-between">Students
+  <span style="display:flex;gap:4px">
+    <button class="sm ghost" onclick="sortRoster('S','name')" title="Sort A-Z">A-Z</button>
+    <button class="sm ghost" onclick="sortRoster('S','wt')" title="Sort by weight">Wt</button>
+    <button class="sm ghost" onclick="sortRoster('S','ht')" title="Sort by height">Ht</button>
+    <button class="sm ghost" onclick="autoSortStudents();redraw()" title="Sort by fall rate slowest to fastest">FR</button>
+    <button class="sm danger" onclick="clearRoster('S')" title="Clear all students">Clear all</button>
+  </span>
+</h3>
+      <div class="tag-list" id="stu-tags"><span class="none-lbl">None added</span></div>
+      <div class="add-row">
+        <input class="nm" id="sn" placeholder="Last name" onkeydown="if(event.key==='Enter')addPerson('S')">
+        <input class="wtin" id="sw" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addPerson('S')">
+        <input class="wtin" id="sh" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addPerson('S')">
+        <button onclick="addPerson('S')">+ Add</button>
+        <button onclick="importCSV('S')" title="Import from CSV">&#128196; Import CSV</button>
+      </div>
+    </div>
+    <div class="roster-col">
+      <h3 style="display:flex;align-items:center;justify-content:space-between">Instructors
+  <span style="display:flex;gap:4px">
+    <button class="sm ghost" onclick="sortRoster('I','name')" title="Sort A-Z">A-Z</button>
+    <button class="sm ghost" onclick="sortRoster('I','wt')" title="Sort by weight">Wt</button>
+    <button class="sm ghost" onclick="sortRoster('I','ht')" title="Sort by height">Ht</button>
+    <button class="sm ghost" onclick="sortRoster('I','fr')" title="Sort by fall rate">FR</button>
+    <button class="sm danger" onclick="clearRoster('I')" title="Clear all instructors">Clear all</button>
+  </span>
+</h3>
+      <div class="tag-list" id="inst-tags"><span class="none-lbl">None added</span></div>
+      <div class="add-row">
+        <input class="nm" id="in" placeholder="Last name" onkeydown="if(event.key==='Enter')addPerson('I')">
+        <input class="wtin" id="iw" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addPerson('I')">
+        <input class="wtin" id="ih" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addPerson('I')">
+        <button onclick="addPerson('I')">+ Add</button>
+        <button onclick="importCSV('I')" title="Import from CSV">&#128196; Import CSV</button>
+      </div>
+    </div>
+  </div>
+  <div class="roster-col">
+    <h3 style="display:flex;align-items:center;justify-content:space-between">Straps
+  <span style="display:flex;gap:4px">
+    <button class="sm ghost" onclick="sortRoster('T','name')" title="Sort A-Z">A-Z</button>
+    <button class="sm ghost" onclick="sortRoster('T','wt')" title="Sort by weight">Wt</button>
+    <button class="sm ghost" onclick="sortRoster('T','ht')" title="Sort by height">Ht</button>
+    <button class="sm ghost" onclick="sortRoster('T','fr')" title="Sort by fall rate">FR</button>
+    <button class="sm danger" onclick="clearRoster('T')" title="Clear all straps">Clear all</button>
+  </span>
+</h3>
+    <div class="tag-list" id="strap-tags"><span class="none-lbl">None added</span></div>
+    <div class="add-row">
+      <input class="nm" id="strn" placeholder="Strap name" onkeydown="if(event.key==='Enter')addStrap()">
+      <input class="wtin" id="strw" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addStrap()">
+      <input class="wtin" id="strh" type="number" placeholder="Ht (in)" onkeydown="if(event.key==='Enter')addStrap()">
+      <button onclick="addStrap()">+ Add</button>
+      <button onclick="importCSV('T')" title="Import from CSV">&#128196; Import CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- EQUIPMENT PANEL -->
+<div class="panel" id="tab-equipment">
+  <div class="eq-add-row">
+    <input class="nm" id="en" placeholder="Item name" onkeydown="if(event.key==='Enter')addEquip()">
+    <input class="wtin" id="ew" type="number" placeholder="Wt (lbs)" onkeydown="if(event.key==='Enter')addEquip()">
+    <button onclick="addEquip()">+ Add item</button>
+  </div>
+  <div class="eq-table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Item / Nomenclature</th><th style="text-align:right">Weight (lbs)</th><th></th><th></th></tr></thead>
+      <tbody id="eq-body"><tr><td colspan="4" style="text-align:center;color:#bbb;padding:16px">No equipment added yet.</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MANIFEST PANEL -->
+<div class="panel" id="tab-manifest">
+  <div class="manifest-toolbar">
+    <button class="add-grp" onclick="addGroup()">+ Add group</button>
+    <span style="font-size:12px;color:#888">Groups A – H max</span>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+      <label style="font-size:12px;color:#555;font-weight:bold">Date:</label>
+      <input type="date" id="manifest-date" style="font-size:12px;border:1px solid #bbb;border-radius:3px;padding:4px 7px;background:#fff;color:#111" onchange="renderGroups()">
+    </div>
+    <button onclick="printManifest()">&#128438; Print manifest</button>
+    <button onclick="saveManifest()" style="background:#1b2b3c;color:#fff;border-color:#1b2b3c">&#128190; Save</button>
+    <button onclick="toggleArchive()">&#128193; Archives</button>
+
+  </div>
+  <div id="archive-panel" style="display:none;background:#fff;border:1px solid #c5cdd8;border-radius:4px;padding:12px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <p style="font-weight:bold;font-size:13px">Saved manifests</p>
+      <button class="sm" onclick="toggleArchive()">Close</button>
+    </div>
+    <div id="archive-list"><p style="font-size:12px;color:#aaa">No saved manifests yet.</p></div>
+  </div>
+  <div class="grid" id="grid">
+    <div class="empty-grid">
+      No groups yet.<br>
+      <strong>Step 1:</strong> Add students &amp; instructors on the <strong>Roster</strong> tab.<br>
+      <strong>Step 2:</strong> Add equipment on the <strong>Equipment</strong> tab.<br>
+      <strong>Step 3:</strong> Click <strong>+ Add group</strong> to build the manifest.
+    </div>
+  </div>
+</div>
+
+<script>
+const LTR = 'ABCDEFGH'.split('');
+const db  = { students:[], instructors:[], straps:[], equipment:[], groups:[] };
+
+// ── TABS ──────────────────────────────────────────────────
+function goTab(t) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(tb => tb.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  document.querySelectorAll('.tab').forEach(tb => {
+    if (tb.textContent.trim().toLowerCase() === t) tb.classList.add('active');
+  });
+}
+
+// ── ROSTER ────────────────────────────────────────────────
+function addPerson(role) {
+  const nId = role === 'S' ? 'sn' : 'in';
+  const wId = role === 'S' ? 'sw' : 'iw';
+  const hId = role === 'S' ? 'sh' : 'ih';
+  const name = document.getElementById(nId).value.trim();
+  const wt   = parseFloat(document.getElementById(wId).value) || 0;
+  const ht   = parseFloat(document.getElementById(hId).value) || 0;
+  if (!name) { document.getElementById(nId).focus(); return; }
+  const newPerson = { name, wt, ht };
+  if (role === 'S') {
+    db.students.push(newPerson);
+    autoSortStudents();
+  } else {
+    db.instructors.push(newPerson);
+  }
+  document.getElementById(nId).value = '';
+  document.getElementById(wId).value = '';
+  document.getElementById(hId).value = '';
+  document.getElementById(nId).focus();
+  redraw();
+}
+
+function addStrap() {
+  const name = document.getElementById('strn').value.trim();
+  const wt   = parseFloat(document.getElementById('strw').value) || 0;
+  const ht   = parseFloat(document.getElementById('strh').value) || 0;
+  if (!name) { document.getElementById('strn').focus(); return; }
+  db.straps.push({ name, wt, ht });
+  document.getElementById('strn').value = '';
+  document.getElementById('strw').value = '';
+  document.getElementById('strh').value = '';
+  document.getElementById('strn').focus();
+  redraw();
+}
+function removeStrap(i) { db.straps.splice(i, 1); redraw(); }
+
+function removePerson(role, i) {
+  (role === 'S' ? db.students : db.instructors).splice(i, 1);
+  redraw();
+}
+
+function renderRoster() {
+  const renderTags = (list, elId, role) => {
+    const el = document.getElementById(elId);
+    if (!list.length) { el.innerHTML = '<span class="none-lbl">None added</span>'; return; }
+    el.innerHTML = list.map((p, i) => {
+      const fr = (p.wt && p.ht) ? (p.wt / p.ht).toFixed(2) : '';
+      return `<span class="tag" id="tag-${role}-${i}">
+        ${role === 'S' ? `<input type="number" min="1" max="${db.students.length}" value="${p.rosterNum || i+1}" title="Change roster number" onchange="reorderStudent(${i},this.value)" style="width:36px;font-weight:bold;color:#1b2b3c;border:1px solid #c5cdd8;border-radius:3px;padding:1px 3px;font-size:12px;text-align:center;background:#e8edf3">` : ''}
+        <span class="tag-name">${p.name}</span>
+        <span class="wt">${p.wt ? p.wt+'lbs' : ''}</span>
+        ${p.ht ? `<span class="wt">${p.ht}"</span>` : ''}
+        ${fr ? `<span class="wt" style="color:#555">FR:${fr}</span>` : ''}
+        <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editRosterItem('${role}',${i})" title="Edit">&#9998;</span>
+        <span class="x" onclick="removePerson('${role}',${i})">&#x2715;</span>
+      </span>`;
+    }).join('');
+  };
+  renderTags(db.students,    'stu-tags',  'S');
+  renderTags(db.instructors, 'inst-tags', 'I');
+
+  const stEl = document.getElementById('strap-tags');
+  if (!db.straps.length) { stEl.innerHTML = '<span class="none-lbl">None added</span>'; }
+  else {
+    stEl.innerHTML = db.straps.map((s, i) => {
+      const fr = (s.wt && s.ht) ? (s.wt / s.ht).toFixed(2) : '';
+      return `<span class="tag" id="tag-T-${i}">
+        <span class="tag-name">${s.name}</span>
+        <span class="wt">${s.wt ? s.wt+'lbs' : ''}</span>
+        ${s.ht ? `<span class="wt">${s.ht}"</span>` : ''}
+        ${fr ? `<span class="wt" style="color:#555">FR:${fr}</span>` : ''}
+        <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editRosterItem('T',${i})" title="Edit">&#9998;</span>
+        <span class="x" onclick="removeStrap(${i})">&#x2715;</span>
+      </span>`;
+    }).join('');
+  }
+}
+
+// ── EQUIPMENT ─────────────────────────────────────────────
+function addEquip() {
+  const name = document.getElementById('en').value.trim();
+  const wt   = parseFloat(document.getElementById('ew').value) || 0;
+  if (!name) { document.getElementById('en').focus(); return; }
+  db.equipment.push({ name, wt });
+  document.getElementById('en').value = '';
+  document.getElementById('ew').value = '';
+  document.getElementById('en').focus();
+  redraw();
+}
+
+function removeEquip(i) { db.equipment.splice(i, 1); redraw(); }
+
+function renderEquipment() {
+  const body = document.getElementById('eq-body');
+  if (!db.equipment.length) {
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#bbb;padding:16px">No equipment added yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = db.equipment.map((e, i) => `
+    <tr id="eq-row-${i}">
+      <td class="dim" style="width:30px">${i + 1}</td>
+      <td>${e.name}</td>
+      <td class="num">${e.wt}</td>
+      <td style="width:44px"><button class="sm" onclick="editEquip(${i})">Edit</button></td>
+      <td style="width:36px"><button class="sm danger" onclick="removeEquip(${i})">&#x2715;</button></td>
+    </tr>`).join('');
+}
+
+function editEquip(i) {
+  const e = db.equipment[i];
+  const row = document.getElementById('eq-row-' + i);
+  row.innerHTML = `
+    <td class="dim">${i + 1}</td>
+    <td><input id="eq-en-${i}" value="${e.name}" style="width:130px;border:1px solid #1b2b3c;border-radius:3px;padding:3px 6px;font-size:12px" onkeydown="if(event.key==='Enter')saveEquip(${i})"></td>
+    <td><input id="eq-ew-${i}" type="number" value="${e.wt}" style="width:65px;border:1px solid #1b2b3c;border-radius:3px;padding:3px 6px;font-size:12px;text-align:right" onkeydown="if(event.key==='Enter')saveEquip(${i})"></td>
+    <td colspan="2" style="white-space:nowrap;padding-left:6px">
+      <button class="sm primary" onclick="saveEquip(${i})">Save</button>
+      <button class="sm" onclick="renderEquipment()" style="margin-left:4px">Cancel</button>
+    </td>`;
+  document.getElementById('eq-en-' + i).focus();
+}
+
+function saveEquip(i) {
+  const name = (document.getElementById('eq-en-' + i).value || '').trim();
+  const wt   = parseFloat(document.getElementById('eq-ew-' + i).value) || 0;
+  if (!name) return alert('Name required');
+  db.equipment[i] = { name, wt };
+  redraw();
+}
+
+// ── GROUPS ────────────────────────────────────────────────
+function newSlot() { return { stu: '', inst: '', ui: '' }; }
+
+function addGroup() {
+  if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS' });
+  redraw();
+}
+
+function removeGroup(gi) {
+  if (!confirm('Remove group ' + db.groups[gi].letter + '?')) return;
+  db.groups.splice(gi, 1);
+  db.groups.forEach((g, i) => g.letter = LTR[i]);
+  redraw();
+}
+
+function addSlot(gi)       { db.groups[gi].slots.push(newSlot()); redraw(); }
+function removeSlot(gi, si){ db.groups[gi].slots.splice(si, 1);  redraw(); }
+function setF(gi, si, f, val) { db.groups[gi].slots[si][f] = val; redraw(); }
+
+function pWt(name, list) { const p = list.find(x => x.name === name); return p ? p.wt : 0; }
+function slotWt(sl) {
+  const uiWt = pWt(sl.ui, db.instructors) || pWt(sl.ui, db.straps) || pWt(sl.ui, db.equipment);
+  return pWt(sl.stu, db.students) + pWt(sl.inst, db.instructors) + uiWt;
+}
+function grpTot(g)  { return g.slots.reduce((a, sl) => a + slotWt(sl), 0); }
+function mjCnt(g)   { return g.slots.filter(sl => sl.stu).length; }
+function nsCnt(g)   { return g.slots.filter(sl => sl.inst).length; }
+function uiCnt(g)   { return g.slots.filter(sl => sl.ui).length; }
+// total jumpers = any slot that has at least a student OR instructor assigned
+function jumperCnt(g) { return g.slots.filter(sl => sl.stu || sl.inst).length; }
+
+function mkStrapOpts(sel, gi) {
+  const used = gi !== undefined ? usedInGroup(gi, 'ui') : new Set();
+  let opts = '<option value="">—</option>';
+  if (db.instructors.length) {
+    opts += '<optgroup label="— Instructors —">' +
+      db.instructors.filter(p => p.name === sel || !used.has(p.name))
+        .map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.instructors)}</option>`).join('') +
+      '</optgroup>';
+  }
+  if (db.straps.length) {
+    opts += '<optgroup label="— Straps —">' +
+      db.straps.filter(s => s.name === sel || !used.has(s.name))
+        .map(s => `<option value="${s.name}"${s.name === sel ? ' selected' : ''}>${s.name}</option>`).join('') +
+      '</optgroup>';
+  }
+  return opts;
+}
+
+function usedInGroup(gi, field) {
+  return new Set(db.groups[gi].slots.map(sl => sl[field]).filter(v => v));
+}
+function getLastName(name) {
+  // name format: "Last, First" or "Last Name, First"
+  return name.split(',')[0].trim();
+}
+function shortLabel(p, list) {
+  const last = getLastName(p.name);
+  const dupes = list.filter(x => getLastName(x.name) === last);
+  if (dupes.length > 1) {
+    const first = (p.name.split(',')[1] || '').trim();
+    return first ? `${last}, ${first.charAt(0)}.` : p.name;
+  }
+  return last;
+}
+function shortStuLabel(p) {
+  const last = p.name.split(',')[0].trim();
+  const dupes = db.students.filter(x => x.name.split(',')[0].trim() === last);
+  if (dupes.length > 1) {
+    const first = (p.name.split(',')[1] || '').trim();
+    return first ? `${last}, ${first.charAt(0)}.` : last;
+  }
+  return last;
+}
+function mkOpts(list, sel, gi, field) {
+  const used = gi !== undefined ? usedInGroup(gi, field) : new Set();
+  const isStudent = list === db.students;
+  return `<option value="">—</option>` +
+    list.filter(p => p.name === sel || !used.has(p.name))
+        .map((p, i) => {
+          let label;
+          if (isStudent) {
+            label = `${p.rosterNum || (db.students.indexOf(p) + 1)}. ${shortStuLabel(p)}`;
+          } else {
+            label = shortLabel(p, list);
+          }
+          return `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${label}</option>`;
+        }).join('');
+}
+function mkEqOpts(sel) {
+  const fixed = [{name:'MJ', wt:50}, {name:'NS', wt:22}];
+  const all = [...fixed, ...db.equipment.filter(e => e.name !== 'MJ' && e.name !== 'NS')];
+  return `<option value="">—</option>` +
+    all.map(e => `<option value="${e.name}"${e.name === sel ? ' selected' : ''}>${e.name}</option>`).join('');
+}
+
+function mkEqLabelOpts(sel) {
+  const fixed = [{name:'MJ',wt:''},{name:'NS',wt:''}];
+  const all = [...fixed, ...db.equipment];
+  return all.map(e => {
+    return `<option value="${e.name}"${e.name === sel ? ' selected' : ''}>${e.name}</option>`;
+  }).join('');
+}
+function setGrpLabel(gi, field, val) {
+  db.groups[gi][field] = val;
+  renderManifest();
+  updateSummary();
+}
+
+function renderManifest() {
+  const grid = document.getElementById('grid');
+  if (!db.groups.length) {
+    grid.innerHTML = `<div class="empty-grid">No groups yet.<br>
+      <strong>Step 1:</strong> Add students &amp; instructors on the <strong>Roster</strong> tab.<br>
+      <strong>Step 2:</strong> Add equipment on the <strong>Equipment</strong> tab.<br>
+      <strong>Step 3:</strong> Click <strong>+ Add group</strong> to build the manifest.
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = db.groups.map((g, gi) => {
+    const rows = g.slots.map((sl, si) => {
+      return `<tr>
+        <td><select onchange="setF(${gi},${si},'stu',this.value)">${mkOpts(db.students, sl.stu, gi, 'stu')}</select></td>
+        <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select></td>
+        <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select></td>
+        <td><button class="sm danger" onclick="removeSlot(${gi},${si})">✕</button></td>
+      </tr>`;
+    }).join('');
+
+    const mj  = mjCnt(g);
+    const ns  = nsCnt(g);
+    const jmp = jumperCnt(g);
+    const tot = grpTot(g);
+
+    return `
+    <div class="grp">
+      <div class="grp-hd">
+        <div>
+          <span class="grp-letter">GRP ${g.letter}</span><span class="grp-meta" style="margin-left:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
+          
+        </div>
+        <div class="grp-hd-btns">
+          <button onclick="addSlot(${gi})">+ Row</button>
+          <button class="danger" onclick="removeGroup(${gi})">Remove</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+      <table style="min-width:400px">
+        <thead><tr>
+          <th>Student</th>
+          <th>Instructor</th>
+          <th>UI / VID / Strap</th>
+          <th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tr class="counts-row">
+          <td><select style="font-size:11px;font-weight:bold;background:#edf1f7;border:1px solid #c5cdd8;border-radius:3px;padding:2px 4px" onchange="setGrpLabel(${gi},'mjLabel',this.value)">${mkEqLabelOpts(g.mjLabel)}</select>: ${mj}</td>
+          <td><select style="font-size:11px;font-weight:bold;background:#edf1f7;border:1px solid #c5cdd8;border-radius:3px;padding:2px 4px" onchange="setGrpLabel(${gi},'nsLabel',this.value)">${mkEqLabelOpts(g.nsLabel)}</select>: ${ns}</td>
+          <td><select style="font-size:11px;font-weight:bold;background:#edf1f7;border:1px solid #c5cdd8;border-radius:3px;padding:2px 4px" onchange="setGrpLabel(${gi},'uiLabel',this.value)">${mkEqLabelOpts(g.uiLabel)}</select>: ${uiCnt(g)}</td>
+          <td></td>
+        </tr>
+        <tfoot>
+          <tr>
+            <td style="font-weight:bold;padding:5px 6px">Total jumpers: ${db.groups.reduce((a,g)=>a+g.slots.reduce((b,sl)=>(sl.stu?b+1:b)+(sl.inst?1:0)+(sl.ui?1:0),0),0)}</td>
+            <td colspan="2" style="text-align:right;padding-right:10px">Total weight</td>
+            <td class="num">${tot} lbs</td>
+          </tr>
+        </tfoot>
+      </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateSummary() {
+  let mj = 0, ns = 0, wt = 0, jumpers = 0;
+  db.groups.forEach(g => {
+    mj      += mjCnt(g);
+    ns      += nsCnt(g);
+    wt      += grpTot(g);
+    jumpers += jumperCnt(g);
+  });
+  document.getElementById('s-grps').textContent    = db.groups.length;
+  const totalJumpers = db.groups.reduce((a, g) => a + g.slots.filter(sl => sl.stu || sl.inst || sl.ui).length, 0);
+  document.getElementById('s-jumpers').textContent = totalJumpers;
+  document.getElementById('s-mj').textContent      = mj;
+  document.getElementById('s-ns').textContent      = ns;
+  document.getElementById('s-wt').textContent      = wt + ' lbs';
+}
+
+function redraw() {
+  renderRoster();
+  renderEquipment();
+  renderManifest();
+  updateSummary();
+}
+
+// Pre-load instructors
+db.instructors = [
+  {name:"Anderson, OJ",wt:230},
+  {name:"Andrews, Greg",wt:210},
+  {name:"Bathhurst, Rob",wt:195},
+  {name:"Berg, Thomas",wt:190},
+  {name:"Bodie, Will",wt:175},
+  {name:"Brewer J., James",wt:190},
+  {name:"Brock, Bryce",wt:185},
+  {name:"Buchard, Simon",wt:180},
+  {name:"Colclasure, JC",wt:225},
+  {name:"Cowan, Jim",wt:200},
+  {name:"Fekete, Stephen",wt:180},
+  {name:"Fernanado, Nas",wt:175},
+  {name:"Friedman, Mike",wt:160},
+  {name:"Gregg, Thomas",wt:200},
+  {name:"Gunn, Johnny",wt:185},
+  {name:"Hammond TJ, Thomas",wt:215},
+  {name:"Hendo, Jay",wt:190},
+  {name:"Julio, Michael",wt:235},
+  {name:"Kilby, Kirk",wt:220},
+  {name:"Lamb, Huck",wt:220},
+  {name:"Lane, Jack",wt:190},
+  {name:"Locke A., Andy",wt:200},
+  {name:"Losey, Ty",wt:190},
+  {name:"Malchiodi, Andy",wt:160},
+  {name:"Mazzetta, Petter",wt:180},
+  {name:"Mills, Travis",wt:180},
+  {name:"Naughton, Luke",wt:200},
+  {name:"Nugent, Jason",wt:210},
+  {name:"Reeves J., James",wt:190},
+  {name:"Robison, Seth",wt:160},
+  {name:"Ross, Chad",wt:175},
+  {name:"Russel, Jay",wt:160},
+  {name:"Smith R., Rusty",wt:205},
+  {name:"Smith S., Sarah",wt:135},
+  {name:"Stewart, Andy",wt:210},
+  {name:"Stocum, Aaron",wt:250},
+  {name:"Strange, Stephanie",wt:130},
+  {name:"Thompson, Jeff",wt:215},
+  {name:"Tranter, Jimmy",wt:160},
+  {name:"Trimble, Rob",wt:185},
+  {name:"Weaver, Caleb",wt:200},
+  {name:"Weyher, Jesse",wt:210},
+  {name:"Wray B., Bill",wt:175},
+  {name:"Zayas, Frank",wt:165}
+];
+
+// Pre-load students
+db.students = [
+  {name:"Watters, John",wt:155},
+  {name:"Wiens, Evan",wt:160},
+  {name:"Mcclellan, Logan",wt:160},
+  {name:"Morales, Justin",wt:155},
+  {name:"Caballero, Enrique",wt:165},
+  {name:"Grant, Karl",wt:170},
+  {name:"Shouse, Zealand",wt:175},
+  {name:"Baccelieri, Thomas",wt:175},
+  {name:"Knode, Mitchel",wt:200},
+  {name:"Smith, Jalen",wt:190},
+  {name:"Sykes, Robert",wt:190},
+  {name:"Feather, Casey",wt:190},
+  {name:"Fallon, Timothy",wt:190},
+  {name:"Landers, Brandon",wt:190},
+  {name:"Crutchfield, Tyler",wt:200},
+  {name:"Brannon, William",wt:210},
+  {name:"Henjum, Wyatt",wt:205},
+  {name:"Basinger, Kody",wt:200},
+  {name:"Bell, Marshall",wt:205},
+  {name:"Fisher, Jonathon",wt:215},
+  {name:"Staffen, Mark",wt:215},
+  {name:"Hostetler, Benjamin",wt:220},
+  {name:"Heredia, Luis",wt:210},
+  {name:"Nordstrom, Valentino",wt:210}
+];
+
+// Pre-load equipment from attached sheet
+db.equipment = [
+  {name:'CE',wt:100},{name:'CE/O2',wt:106},{name:'HAWG',wt:70},{name:'LBE',wt:16},
+  {name:'MJ',wt:50},{name:'MMJ',wt:41},{name:'MTV3',wt:65},{name:'MTV3/CE',wt:110},
+  {name:'MTV3/CE/O2',wt:116},{name:'MTV3/O2',wt:72},{name:'NODs',wt:52},{name:'NS',wt:22},
+  {name:'O2',wt:56},{name:'RTTB',wt:435},{name:'RTTB/CE',wt:470},{name:'RTTB/CE/02',wt:476},
+  {name:'TP',wt:8},{name:'BuddyBag',wt:50},{name:'MTV3/SG-7',wt:215}
+];
+redraw();
+
+function printManifest() {
+  // Build a hidden print container with groups split into pages of 6
+  let existing = document.getElementById('print-container');
+  if (existing) existing.remove();
+
+  const container = document.createElement('div');
+  container.id = 'print-container';
+
+  const grpEls = Array.from(document.querySelectorAll('#grid .grp'));
+  if (!grpEls.length) { alert('No groups to print.'); return; }
+
+  for (let i = 0; i < grpEls.length; i += 6) {
+    const page = document.createElement('div');
+    page.className = 'print-page';
+    grpEls.slice(i, i + 6).forEach(g => page.appendChild(g.cloneNode(true)));
+    container.appendChild(page);
+  }
+
+  document.body.appendChild(container);
+  window.print();
+  document.body.removeChild(container);
+}
+
+// ── SAVE / ARCHIVE ───────────────────────────────────────
+function saveManifest() {
+  const date = document.getElementById('manifest-date').value;
+  if (!date) return alert('Please set a date before saving.');
+  const key = 'mff_manifest_' + date;
+  const snapshot = {
+    date,
+    students:    JSON.parse(JSON.stringify(db.students)),
+    instructors: JSON.parse(JSON.stringify(db.instructors)),
+    straps:      JSON.parse(JSON.stringify(db.straps)),
+    equipment:   JSON.parse(JSON.stringify(db.equipment)),
+    groups:      JSON.parse(JSON.stringify(db.groups))
+  };
+  const existing = localStorage.getItem(key);
+  if (existing && !confirm('A manifest for ' + formatDate(date) + ' already exists. Overwrite it?')) return;
+  localStorage.setItem(key, JSON.stringify(snapshot));
+  alert('Manifest saved for ' + formatDate(date));
+  renderArchive();
+}
+
+function loadManifest(key) {
+  if (!confirm('Load this manifest? Current manifest will be replaced.')) return;
+  const raw = localStorage.getItem(key);
+  if (!raw) return alert('Not found.');
+  const snap = JSON.parse(raw);
+  db.students    = snap.students    || [];
+  db.instructors = snap.instructors || [];
+  db.straps      = snap.straps      || [];
+  db.equipment   = snap.equipment   || [];
+  db.groups      = snap.groups      || [];
+  document.getElementById('manifest-date').value = snap.date || '';
+  redraw();
+  toggleArchive();
+}
+
+function deleteArchive(key, date) {
+  if (!confirm('Delete manifest for ' + date + '?')) return;
+  localStorage.removeItem(key);
+  renderArchive();
+}
+
+function toggleArchive() {
+  const panel = document.getElementById('archive-panel');
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  if (open) renderArchive();
+}
+
+function renderArchive() {
+  const list = document.getElementById('archive-list');
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('mff_manifest_')).sort().reverse();
+  if (!keys.length) {
+    list.innerHTML = '<p style="font-size:12px;color:#aaa">No saved manifests yet.</p>';
+    return;
+  }
+  list.innerHTML = keys.map(k => {
+    const snap = JSON.parse(localStorage.getItem(k) || '{}');
+    const d = formatDate(snap.date || '');
+    const grps = (snap.groups || []).length;
+    const jmp = (snap.groups || []).reduce((a,g) => a + (g.slots||[]).reduce((b,sl) => b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0),0), 0);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee">
+      <div>
+        <span style="font-weight:bold;font-size:13px">${d}</span>
+        <span style="font-size:11px;color:#888;margin-left:8px">${grps} group${grps!==1?'s':''} · ${jmp} jumpers</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="sm" onclick="loadManifest('${k}')">Load</button>
+        <button class="sm danger" onclick="deleteArchive('${k}','${d}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const p = d.split('-');
+  return p.length === 3 ? p[1]+'/'+p[2]+'/'+p[0] : d;
+}
+
+// ── PWA INSTALL PROMPT ───────────────────────────────────
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'flex';
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    document.getElementById('install-banner').style.display = 'none';
+  });
+});
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+  deferredInstallPrompt = null;
+});
+
+// ── PWA SERVICE WORKER REGISTRATION ─────────────────────
+if ('serviceWorker' in navigator) {
+  // Inline the service worker as a blob so no external file is needed
+  const swCode = `
+    const CACHE = 'mff-manifest-v2';
+    const URLS  = [self.location.href.replace(/\/sw.*/, '') || '/'];
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(URLS)).then(() => self.skipWaiting())
+      );
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys()
+          .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+          .then(() => self.clients.claim())
+      );
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(cached => {
+          const network = fetch(e.request).then(res => {
+            if (res && res.status === 200) {
+              const clone = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return res;
+          }).catch(() => cached);
+          return cached || network;
+        })
+      );
+    });
+  `;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// ── PWA MANIFEST INJECTION ────────────────────────────────
+(function() {
+  const manifest = {
+    name: 'MFF Manifest',
+    short_name: 'MFF',
+    description: 'Military Free Fall jump manifest builder',
+    start_url: '.',
+    display: 'standalone',
+    orientation: 'any',
+    background_color: '#1b2b3c',
+    theme_color: '#1b2b3c',
+    categories: ['utilities'],
+    icons: [
+      {
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='24' fill='%231b2b3c'/%3E%3Ctext x='50%25' y='54%25' font-size='110' text-anchor='middle' dominant-baseline='middle' fill='%23ffffff' font-family='Arial'%3E%E2%9C%88%3C/text%3E%3C/svg%3E",
+        sizes: '192x192',
+        type: 'image/svg+xml',
+        purpose: 'any maskable'
+      },
+      {
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%231b2b3c'/%3E%3Ctext x='50%25' y='54%25' font-size='300' text-anchor='middle' dominant-baseline='middle' fill='%23ffffff' font-family='Arial'%3E%E2%9C%88%3C/text%3E%3C/svg%3E",
+        sizes: '512x512',
+        type: 'image/svg+xml',
+        purpose: 'any maskable'
+      }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.head.appendChild(link);
+})();
+
+
+// ── CSV IMPORT ────────────────────────────────────────────
+function importCSV(role) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv,.txt';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+      let imported = 0;
+      let skipped  = 0;
+      const target = role === 'S' ? db.students : role === 'I' ? db.instructors : db.straps;
+
+      lines.forEach(line => {
+        // Split on comma or tab
+        const parts = line.split(/,|\t/).map(p => p.trim().replace(/^"|"$/g, ''));
+        if (!parts.length) return;
+
+        // Skip header rows — if first cell looks like a header word skip it
+        const firstLower = parts[0].toLowerCase();
+        if (['name','last','first','student','instructor','strap','last name'].includes(firstLower)) return;
+
+        // Find name and weight — weight is any numeric-looking part
+        let name = '';
+        let wt   = 0;
+
+        // Try to detect which columns are name vs weight
+        const numIdx = parts.findIndex(p => !isNaN(parseFloat(p)) && p !== '');
+        if (numIdx === -1) {
+          // No weight column — just name
+          name = parts.join(', ').trim();
+        } else if (numIdx === 0) {
+          // Weight first, name after
+          wt   = parseFloat(parts[0]) || 0;
+          name = parts.slice(1).join(', ').trim();
+        } else {
+          // Name first (everything before numeric), weight after
+          name = parts.slice(0, numIdx).join(', ').trim();
+          wt   = parseFloat(parts[numIdx]) || 0;
+        }
+
+        if (!name) { skipped++; return; }
+
+        // Avoid exact duplicates
+        if (target.find(x => x.name.toLowerCase() === name.toLowerCase())) { skipped++; return; }
+
+        target.push({ name, wt });
+        imported++;
+      });
+
+      redraw();
+      const roleLabel = role === 'S' ? 'Students' : role === 'I' ? 'Instructors' : 'Straps';
+      alert(roleLabel + ': ' + imported + ' imported' + (skipped ? ', ' + skipped + ' skipped (duplicates or blank).' : '.'));
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ── ROSTER SORT ──────────────────────────────────────────
+function autoSortStudents() {
+  // Sort by fall rate ascending — slowest (lowest FR) = roster #1
+  db.students.sort((a, b) => {
+    const fa = (a.wt && a.ht) ? a.wt / a.ht : 999;
+    const fb = (b.wt && b.ht) ? b.wt / b.ht : 999;
+    return fa - fb;
+  });
+  // Assign permanent roster numbers based on FR rank
+  db.students.forEach((s, i) => s.rosterNum = i + 1);
+}
+
+function reorderStudent(fromIdx, newRosterNum) {
+  const num = parseInt(newRosterNum);
+  if (isNaN(num) || num < 1 || num > db.students.length) { redraw(); return; }
+  // Update just the rosterNum on this student — don't move position
+  db.students[fromIdx].rosterNum = num;
+  redraw();
+}
+
+
+const sortState = { S: { key: null, asc: true }, I: { key: null, asc: true }, T: { key: null, asc: true } };
+
+function clearRoster(role) {
+  const label = role === 'S' ? 'students' : role === 'I' ? 'instructors' : 'straps';
+  if (!confirm('Clear all ' + label + '? This cannot be undone.')) return;
+  if (role === 'S')      db.students    = [];
+  else if (role === 'I') db.instructors = [];
+  else                   db.straps      = [];
+  redraw();
+}
+
+function sortRoster(role, key) {
+  const state = sortState[role];
+  // Toggle direction if same key clicked again
+  if (state.key === key) state.asc = !state.asc;
+  else { state.key = key; state.asc = true; }
+
+  const list = role === 'S' ? db.students : role === 'I' ? db.instructors : db.straps;
+
+  list.sort((a, b) => {
+    let va, vb;
+    if (key === 'name') {
+      va = a.name.toLowerCase();
+      vb = b.name.toLowerCase();
+      return state.asc ? va.localeCompare(vb) : vb.localeCompare(va);
+    }
+    if (key === 'fr') {
+      va = (a.wt && a.ht) ? a.wt / a.ht : 0;
+      vb = (b.wt && b.ht) ? b.wt / b.ht : 0;
+    } else {
+      va = a[key] || 0;
+      vb = b[key] || 0;
+    }
+    return state.asc ? va - vb : vb - va;
+  });
+
+  redraw();
+}
+
+// ── ROSTER EDIT ───────────────────────────────────────────────
+function editRosterItem(role, i) {
+  const item = role === 'T' ? db.straps[i] : (role === 'S' ? db.students[i] : db.instructors[i]);
+  const tagEl = document.getElementById('tag-' + role + '-' + i);
+  if (!tagEl) return;
+  const num = role === 'S' ? `<span style="font-weight:bold;color:#1b2b3c;margin-right:3px">${i+1}.</span>` : '';
+  tagEl.innerHTML = `
+    ${num}
+    <input id="edit-name-${role}-${i}" value="${item.name}" style="width:120px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px" onkeydown="if(event.key==='Enter')saveRosterItem('${role}',${i})">
+    <input id="edit-wt-${role}-${i}" type="number" value="${item.wt}" placeholder="Wt" style="width:50px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px;text-align:right" onkeydown="if(event.key==='Enter')saveRosterItem('${role}',${i})">
+    <input id="edit-ht-${role}-${i}" type="number" value="${item.ht||''}" placeholder="Ht&quot;" style="width:45px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px;text-align:right" onkeydown="if(event.key==='Enter')saveRosterItem('${role}',${i})">
+    <span class="x" style="color:#1b2b3c" onclick="saveRosterItem('${role}',${i})" title="Save">&#10003;</span>
+    <span class="x" onclick="redraw()" title="Cancel">&#x2715;</span>`;
+  document.getElementById('edit-name-' + role + '-' + i).focus();
+}
+
+function saveRosterItem(role, i) {
+  const name = (document.getElementById('edit-name-' + role + '-' + i).value || '').trim();
+  const wt   = parseFloat(document.getElementById('edit-wt-' + role + '-' + i).value) || 0;
+  const ht   = parseFloat(document.getElementById('edit-ht-' + role + '-' + i).value) || 0;
+  if (!name) return alert('Name required');
+  if (role === 'S')      db.students[i]    = { name, wt, ht };
+  else if (role === 'I') db.instructors[i] = { name, wt, ht };
+  else                   db.straps[i]      = { name, wt, ht };
+  redraw();
+}
+</script>
+</body>
+</html>
 
