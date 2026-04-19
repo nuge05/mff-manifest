@@ -980,7 +980,9 @@ function importCSV(role) {
         });
 
         if (!textParts.length) { skipped++; return; }
-        const name = textParts.join(', ').trim();
+        // Title case — capitalize first letter of each word
+        const titleCase = s => s.toLowerCase().replace(/\b([a-z])/g, c => c.toUpperCase());
+        const name = textParts.map(titleCase).join(', ').trim();
 
         // Smart height vs weight detection:
         // - If 2 numbers: smaller one (< 100) is likely height, bigger is weight
