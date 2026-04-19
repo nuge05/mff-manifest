@@ -410,7 +410,7 @@ function newSlot() { return { stu: '', inst: '', ui: '' }; }
 
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
-  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS' });
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', pj: '', aj: '' });
   redraw();
 }
 
@@ -502,7 +502,25 @@ function mkEqOpts(sel) {
     all.map(e => `<option value="${e.name}"${e.name === sel ? ' selected' : ''}>${e.name}</option>`).join('');
 }
 
-function mkEqLabelOpts(sel) {
+function mkPJAJOpts(sel) {
+  let opts = '<option value="">—</option>';
+  if (db.instructors.length) {
+    opts += '<optgroup label="Instructors">' +
+      db.instructors.map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.instructors)}</option>`).join('') +
+      '</optgroup>';
+  }
+  if (db.straps.length) {
+    opts += '<optgroup label="Straps">' +
+      db.straps.map(s => `<option value="${s.name}"${s.name === sel ? ' selected' : ''}>${s.name}</option>`).join('') +
+      '</optgroup>';
+  }
+  return opts;
+}
+function setGrpPJAJ(gi, field, val) {
+  db.groups[gi][field] = val;
+  renderManifest();
+  updateSummary();
+}function mkEqLabelOpts(sel) {
   const fixed = [{name:'MJ',wt:''},{name:'NS',wt:''}];
   const all = [...fixed, ...db.equipment];
   return all.map(e => {
@@ -545,7 +563,7 @@ function renderManifest() {
     <div class="grp">
       <div class="grp-hd">
         <div>
-          <span class="grp-letter">GRP ${g.letter}</span><span class="grp-meta" style="margin-left:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
+          <span class="grp-letter">GRP ${g.letter}</span><span style="margin-left:8px;font-size:10px;color:#8ab4d4">PJ</span><select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select><span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span><select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'aj',this.value)">${mkPJAJOpts(g.aj)}</select><span class="grp-meta" style="margin-left:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
           
         </div>
         <div class="grp-hd-btns">
