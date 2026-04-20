@@ -119,6 +119,8 @@ select:focus{outline:none;border-color:#1b2b3c}
   tfoot td{font-size:9px}
   #grid{display:none!important}
 }
+.grp.dragging{opacity:0.4}
+.grp.drag-over{border:2px dashed #1b2b3c;background:#e8edf3}
 </style>
 </head>
 <body>
@@ -776,13 +778,11 @@ function renderManifest() {
     const tot = grpTot(g);
 
     return `
-    <div class="grp">
+    <div class="grp" draggable="true" data-gi="${gi}" ondragstart="dragStart(event,${gi})" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dragDrop(event,${gi})" ondragend="dragEnd(event)">
       <div class="grp-hd">
         <div>
+          <span class="drag-handle" title="Drag to reorder" style="cursor:grab;padding:0 8px 0 2px;font-size:14px;color:#8ab4d4;user-select:none">&#8801;</span>
           <span class="grp-letter">GRP ${g.letter}</span>
-          <select title="Move to position" style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 4px;margin-left:6px" onchange="moveGroupTo(${gi},this.value)">
-            ${db.groups.map((_, j) => `<option value="${j}"${j === gi ? ' selected' : ''}>${j + 1}</option>`).join('')}
-          </select>
           <span style="margin-left:8px;font-size:10px;color:#8ab4d4">PJ</span>
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
           <span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span>
@@ -1117,6 +1117,38 @@ function formatDate(d) {
   return p.length === 3 ? p[1]+'/'+p[2]+'/'+p[0] : d;
 }
 
+// ── DRAG AND DROP FOR GROUP REORDERING ──────────────────
+let dragSrcIdx = null;
+
+function dragStart(e, gi) {
+  dragSrcIdx = gi;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', String(gi)); } catch(_) {}
+}
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function dragDrop(e, targetIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+  const moved = db.groups.splice(dragSrcIdx, 1)[0];
+  db.groups.splice(targetIdx, 0, moved);
+  dragSrcIdx = null;
+  redraw();
+}
+function dragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.grp.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragSrcIdx = null;
+}
+
 // ── PROFILES ──────────────────────────────────────────
 function addProfile() {
   const aircraft = document.getElementById('pac').value.trim();
@@ -1431,3 +1463,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
