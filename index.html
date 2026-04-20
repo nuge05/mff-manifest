@@ -543,6 +543,14 @@ function saveEquip(i) {
 // ── GROUPS ────────────────────────────────────────────────
 function newSlot() { return { stu: '', inst: '', ui: '', tm: '', pass: '' }; }
 
+function moveGroup(gi, dir) {
+  const newIdx = gi + dir;
+  if (newIdx < 0 || newIdx >= db.groups.length) return;
+  const moved = db.groups.splice(gi, 1)[0];
+  db.groups.splice(newIdx, 0, moved);
+  redraw();
+}
+
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
   db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', pj: '', aj: '' });
@@ -772,6 +780,8 @@ function renderManifest() {
           <span class="grp-meta" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
         </div>
         <div class="grp-hd-btns">
+          <button onclick="moveGroup(${gi},-1)" title="Move up" ${gi === 0 ? 'disabled' : ''}>&#9650;</button>
+          <button onclick="moveGroup(${gi},1)" title="Move down" ${gi === db.groups.length - 1 ? 'disabled' : ''}>&#9660;</button>
           <button onclick="addSlot(${gi})">+ Row</button>
           <button class="danger" onclick="removeGroup(${gi})">Remove</button>
         </div>
@@ -1413,3 +1423,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
