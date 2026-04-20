@@ -134,6 +134,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 <div class="summary">
   <div class="s-item"><span class="s-lbl">Groups</span><span class="s-val" id="s-grps">0</span></div>
   <div class="s-item"><span class="s-lbl">Total jumpers</span><span class="s-val" id="s-jumpers">0</span></div>
+  <div class="s-item"><span class="s-lbl">Total canopies</span><span class="s-val" id="s-canopies">0</span></div>
   <div class="s-item"><span class="s-lbl">Total MJ</span><span class="s-val" id="s-mj">0</span></div>
   <div class="s-item"><span class="s-lbl">Total NS</span><span class="s-val" id="s-ns">0</span></div>
   <div class="s-item"><span class="s-lbl">Total acft wt</span><span class="s-val" id="s-wt">0 lbs</span></div>
@@ -788,8 +789,8 @@ function renderManifest() {
         </tr>
         <tfoot>
           <tr>
-            <td style="font-weight:bold;padding:5px 6px">Total jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)}</td>
-            <td colspan="${db.mode === 'TANDEM' ? 3 : 2}" style="text-align:right;padding-right:10px">Total weight</td>
+            <td style="font-weight:bold;padding:5px 6px" colspan="${db.mode === 'TANDEM' ? 2 : 1}">Total jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)} &nbsp;·&nbsp; Canopies: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0),0)}</td>
+            <td colspan="${db.mode === 'TANDEM' ? 2 : 2}" style="text-align:right;padding-right:10px">Total weight</td>
             <td class="num">${tot} lbs</td>
           </tr>
         </tfoot>
@@ -809,7 +810,10 @@ function updateSummary() {
   });
   document.getElementById('s-grps').textContent    = db.groups.length;
   const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0) + (sl.pass?1:0), 0), 0);
+  // Canopies: MFF — one per jumper; Tandem — TM counts for 1 (shared with pass), inst=1, ui=1 (pass NOT counted)
+  const totalCanopies = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0), 0), 0);
   document.getElementById('s-jumpers').textContent = totalJumpers;
+  document.getElementById('s-canopies').textContent = totalCanopies;
   document.getElementById('s-mj').textContent      = mj;
   document.getElementById('s-ns').textContent      = ns;
   document.getElementById('s-wt').textContent      = wt + ' lbs';
@@ -1407,3 +1411,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
