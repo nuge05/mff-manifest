@@ -277,10 +277,8 @@ select:focus{outline:none;border-color:#1b2b3c}
     </h3>
     <div class="tag-list" id="profile-list"><span class="none-lbl">None added</span></div>
     <div class="add-row" style="flex-wrap:wrap;gap:6px">
-      <input class="nm" id="pn"  placeholder="Profile name"  style="width:140px" onkeydown="if(event.key==='Enter')addProfile()">
-      <input class="nm" id="pac" placeholder="Aircraft"      style="width:110px" onkeydown="if(event.key==='Enter')addProfile()">
-      <input class="nm" id="pex" placeholder="Exit (H/CE/O)" style="width:120px" onkeydown="if(event.key==='Enter')addProfile()">
-      <input class="nm" id="pnotes" placeholder="Notes (optional)" style="width:160px" onkeydown="if(event.key==='Enter')addProfile()">
+      <input class="nm" id="pac" placeholder="Aircraft"      style="width:140px" onkeydown="if(event.key==='Enter')addProfile()">
+      <input class="nm" id="pex" placeholder="Exit (H/CE/O)" style="width:140px" onkeydown="if(event.key==='Enter')addProfile()">
       <button onclick="addProfile()">+ Add</button>
     </div>
   </div>
@@ -1121,17 +1119,18 @@ function formatDate(d) {
 
 // ── PROFILES ──────────────────────────────────────────
 function addProfile() {
-  const name = document.getElementById('pn').value.trim();
-  if (!name) return document.getElementById('pn').focus();
+  const aircraft = document.getElementById('pac').value.trim();
+  const exit     = document.getElementById('pex').value.trim();
+  if (!aircraft && !exit) return document.getElementById('pac').focus();
   const profile = {
-    name,
-    aircraft: document.getElementById('pac').value.trim(),
-    exit:     document.getElementById('pex').value.trim(),
-    notes:    document.getElementById('pnotes').value.trim()
+    name: `${aircraft}${aircraft && exit ? ' - ' : ''}${exit}`.trim(),
+    aircraft,
+    exit
   };
   db.profiles.push(profile);
-  ['pn','pac','pex','pnotes'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('pn').focus();
+  document.getElementById('pac').value = '';
+  document.getElementById('pex').value = '';
+  document.getElementById('pac').focus();
   redraw();
 }
 function removeProfile(i) {
@@ -1143,20 +1142,19 @@ function editProfile(i) {
   const tagEl = document.getElementById('prof-tag-' + i);
   if (!tagEl) return;
   tagEl.innerHTML = `
-    <input id="epn-${i}"  value="${p.name||''}"     placeholder="Name"     style="width:100px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
-    <input id="epac-${i}" value="${p.aircraft||''}" placeholder="Aircraft" style="width:80px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
-    <input id="epex-${i}" value="${p.exit||''}"     placeholder="Exit"     style="width:90px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
-    <input id="epno-${i}" value="${p.notes||''}"    placeholder="Notes"    style="width:130px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <input id="epac-${i}" value="${p.aircraft||''}" placeholder="Aircraft" style="width:110px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <input id="epex-${i}" value="${p.exit||''}"     placeholder="Exit"     style="width:110px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
     <span class="x" style="color:#1b2b3c" onclick="saveProfile(${i})" title="Save">&#10003;</span>
     <span class="x" onclick="redraw()" title="Cancel">&#x2715;</span>`;
-  document.getElementById('epn-' + i).focus();
+  document.getElementById('epac-' + i).focus();
 }
 function saveProfile(i) {
+  const aircraft = document.getElementById('epac-' + i).value.trim();
+  const exit     = document.getElementById('epex-' + i).value.trim();
   db.profiles[i] = {
-    name:     document.getElementById('epn-'  + i).value.trim(),
-    aircraft: document.getElementById('epac-' + i).value.trim(),
-    exit:     document.getElementById('epex-' + i).value.trim(),
-    notes:    document.getElementById('epno-' + i).value.trim()
+    aircraft,
+    exit,
+    name: `${aircraft}${aircraft && exit ? ' - ' : ''}${exit}`.trim()
   };
   redraw();
 }
@@ -1174,10 +1172,8 @@ function renderProfiles() {
   }
   el.innerHTML = db.profiles.map((p, i) => `
     <span class="tag" id="prof-tag-${i}" style="max-width:100%">
-      <span class="tag-name" style="font-weight:bold">${p.name}</span>
-      ${p.aircraft ? `<span class="wt">${p.aircraft}</span>` : ''}
+      ${p.aircraft ? `<span class="tag-name">${p.aircraft}</span>` : ''}
       ${p.exit ? `<span class="wt">${p.exit}</span>` : ''}
-      ${p.notes ? `<span class="wt" style="color:#555">${p.notes}</span>` : ''}
       <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editProfile(${i})" title="Edit">&#9998;</span>
       <span class="x" onclick="removeProfile(${i})">&#x2715;</span>
     </span>`).join('');
