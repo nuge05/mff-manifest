@@ -1,4 +1,4 @@
-d<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,7 +8,6 @@ d<!DOCTYPE html>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MFF Manifest">
 <meta name="theme-color" content="#1b2b3c">
-<link rel="manifest" href="manifest.json">
 <title>MFF Manifest</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -124,13 +123,6 @@ select:focus{outline:none;border-color:#1b2b3c}
 </head>
 <body>
 
-<div id="install-banner" style="display:none;background:#243548;color:#fff;padding:8px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px">
-  <span>&#128640; Install MFF Manifest as an app for offline use</span>
-  <div style="display:flex;gap:8px">
-    <button id="install-btn" class="primary" style="font-size:12px;padding:4px 12px">Install</button>
-    <button onclick="document.getElementById('install-banner').style.display='none'" style="font-size:12px;padding:4px 10px;background:transparent;border-color:#4a6a8a;color:#cce">Dismiss</button>
-  </div>
-</div>
 <div class="hdr">
   <h1>MFF MANIFEST</h1>
   <div class="hdr-btns">
@@ -276,6 +268,22 @@ select:focus{outline:none;border-color:#1b2b3c}
 </div>
 
 <!-- MANIFEST PANEL -->
+<div class="panel" id="tab-profiles">
+  <div class="roster-col" style="max-width:720px;margin:0 auto">
+    <h3 style="display:flex;align-items:center;justify-content:space-between">Jump Profiles
+      <button class="sm danger" onclick="clearProfiles()">Clear all</button>
+    </h3>
+    <div class="tag-list" id="profile-list"><span class="none-lbl">None added</span></div>
+    <div class="add-row" style="flex-wrap:wrap;gap:6px">
+      <input class="nm" id="pn"  placeholder="Profile name"  style="width:140px" onkeydown="if(event.key==='Enter')addProfile()">
+      <input class="nm" id="pac" placeholder="Aircraft"      style="width:110px" onkeydown="if(event.key==='Enter')addProfile()">
+      <input class="nm" id="pex" placeholder="Exit (H/CE/O)" style="width:120px" onkeydown="if(event.key==='Enter')addProfile()">
+      <input class="nm" id="pnotes" placeholder="Notes (optional)" style="width:160px" onkeydown="if(event.key==='Enter')addProfile()">
+      <button onclick="addProfile()">+ Add</button>
+    </div>
+  </div>
+</div>
+
 <div class="panel" id="tab-manifest">
   <div class="manifest-toolbar">
     <div style="display:flex;background:#e8edf3;border-radius:4px;padding:2px;gap:2px;margin-right:8px">
@@ -312,7 +320,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
-const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], mffGroups:[], tandemGroups:[], mode:'MFF',
+const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], mffGroups:[], tandemGroups:[], mode:'MFF',
   get groups() { return this.mode === 'TANDEM' ? this.tandemGroups : this.mffGroups; },
   set groups(v) { if (this.mode === 'TANDEM') this.tandemGroups = v; else this.mffGroups = v; }
 };
@@ -809,6 +817,7 @@ function updateSummary() {
 function redraw() {
   renderRoster();
   renderEquipment();
+  renderProfiles();
   renderManifest();
   updateSummary();
   saveDB();
@@ -842,6 +851,7 @@ function loadDB() {
     if (saved.flight1)     db.flight1     = saved.flight1;
     if (saved.ui)          db.ui          = saved.ui;
     if (saved.equipment)   db.equipment   = saved.equipment;
+    if (saved.profiles)    db.profiles    = saved.profiles;
     if (saved.mode)        db.mode        = saved.mode;
     // Handle both old (single groups) and new (split) storage
     if (saved.mffGroups)    db.mffGroups    = saved.mffGroups;
@@ -898,19 +908,27 @@ function printManifest() {
 function saveManifest() {
   const date = document.getElementById('manifest-date').value;
   if (!date) return alert('Please set a date before saving.');
-  const key = 'mff_manifest_' + date;
+  const key = 'mff_manifest_' + date + '_' + db.mode;
+  // Embed computed weights in each slot so preview can show totals without needing rosters
+  const groupsWithWt = JSON.parse(JSON.stringify(db.groups));
+  groupsWithWt.forEach(g => {
+    g.slots.forEach(sl => { sl._wt = slotWt(sl); });
+  });
   const snapshot = {
     date,
+    mode:        db.mode,
     students:    JSON.parse(JSON.stringify(db.students)),
     instructors: JSON.parse(JSON.stringify(db.instructors)),
     straps:      JSON.parse(JSON.stringify(db.straps)),
+    flight1:     JSON.parse(JSON.stringify(db.flight1 || [])),
+    ui:          JSON.parse(JSON.stringify(db.ui || [])),
     equipment:   JSON.parse(JSON.stringify(db.equipment)),
-    groups:      JSON.parse(JSON.stringify(db.groups))
+    groups:      groupsWithWt
   };
   const existing = localStorage.getItem(key);
-  if (existing && !confirm('A manifest for ' + formatDate(date) + ' already exists. Overwrite it?')) return;
+  if (existing && !confirm('A manifest for ' + formatDate(date) + ' (' + db.mode + ') already exists. Overwrite it?')) return;
   localStorage.setItem(key, JSON.stringify(snapshot));
-  alert('Manifest saved for ' + formatDate(date));
+  alert('Manifest saved for ' + formatDate(date) + ' (' + db.mode + ')');
   renderArchive();
 }
 
@@ -922,10 +940,13 @@ function loadManifest(key) {
   db.students    = snap.students    || [];
   db.instructors = snap.instructors || [];
   db.straps      = snap.straps      || [];
+  db.flight1     = snap.flight1     || [];
+  db.ui          = snap.ui          || [];
   db.equipment   = snap.equipment   || [];
+  if (snap.mode) db.mode = snap.mode;
   db.groups      = snap.groups      || [];
   document.getElementById('manifest-date').value = snap.date || '';
-  redraw();
+  setMode(db.mode);
   toggleArchive();
 }
 
@@ -944,7 +965,7 @@ function toggleArchive() {
 
 function renderArchive() {
   const list = document.getElementById('archive-list');
-  const keys = Object.keys(localStorage).filter(k => k.startsWith('mff_manifest_')).sort().reverse();
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('mff_manifest_') && k !== 'mff_manifest_current').sort().reverse();
   if (!keys.length) {
     list.innerHTML = '<p style="font-size:12px;color:#aaa">No saved manifests yet.</p>';
     return;
@@ -953,18 +974,114 @@ function renderArchive() {
     const snap = JSON.parse(localStorage.getItem(k) || '{}');
     const d = formatDate(snap.date || '');
     const grps = (snap.groups || []).length;
-    const jmp = (snap.groups || []).reduce((a,g) => a + (g.slots||[]).reduce((b,sl) => b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0),0), 0);
+    const jmp = (snap.groups || []).reduce((a,g) => a + (g.slots||[]).reduce((b,sl) => b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0), 0);
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee">
       <div>
         <span style="font-weight:bold;font-size:13px">${d}</span>
+        <span style="font-size:10px;background:#1b2b3c;color:#fff;padding:1px 6px;border-radius:3px;margin-left:6px">${snap.mode || 'MFF'}</span>
         <span style="font-size:11px;color:#888;margin-left:8px">${grps} group${grps!==1?'s':''} · ${jmp} jumpers</span>
       </div>
       <div style="display:flex;gap:6px">
+        <button class="sm" onclick="previewManifest('${k}')">Preview</button>
         <button class="sm" onclick="loadManifest('${k}')">Load</button>
         <button class="sm danger" onclick="deleteArchive('${k}','${d}')">Delete</button>
       </div>
     </div>`;
   }).join('');
+}
+
+function previewManifest(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return alert('Not found.');
+  const snap = JSON.parse(raw);
+  const groups = snap.groups || [];
+  const dateLabel = formatDate(snap.date || '');
+  
+  // Build a read-only preview in a modal overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'preview-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;overflow:auto;padding:20px';
+  
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#f0f2f5;max-width:1400px;margin:0 auto;border-radius:6px;padding:16px;position:relative';
+  
+  // Build HTML for the preview groups
+  let groupsHTML = '';
+  groups.forEach(g => {
+    const totalWt = (g.slots||[]).reduce((a, sl) => {
+      // Simple weight calc using saved state
+      return a + (sl._wt || 0);
+    }, 0);
+    const jmpCount = (g.slots||[]).reduce((b,sl) => b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0);
+    
+    const isTandem = (g.slots || []).some(sl => sl.tm || sl.pass);
+    const cols = isTandem 
+      ? '<th>TM</th><th>Pass</th><th>Instructor</th><th>Straps</th>'
+      : '<th>Student</th><th>Instructor</th><th>UI / VID / Strap</th>';
+    
+    const rows = (g.slots||[]).map(sl => {
+      if (isTandem) {
+        return `<tr><td>${sl.tm||'—'}</td><td>${sl.pass||'—'}</td><td>${sl.inst||'—'}</td><td>${sl.ui||'—'}</td></tr>`;
+      }
+      return `<tr><td>${sl.stu||'—'}</td><td>${sl.inst||'—'}</td><td>${sl.ui||'—'}</td></tr>`;
+    }).join('');
+    
+    groupsHTML += `
+      <div class="grp" style="border:1px solid #ccc;margin-bottom:10px;background:#fff">
+        <div class="grp-hd" style="background:#1b2b3c;color:#fff;padding:6px 10px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:14px;font-weight:bold">GRP ${g.letter}</span>
+          ${g.pj ? `<span style="font-size:11px">PJ: ${g.pj}</span>` : ''}
+          ${g.aj ? `<span style="font-size:11px">AJ: ${g.aj}</span>` : ''}
+          <span style="margin-left:auto;font-size:11px">${dateLabel}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead style="background:#e8edf3"><tr>${cols}</tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr><td style="padding:6px;font-weight:bold" colspan="${isTandem?2:1}">Jumpers: ${jmpCount}</td><td colspan="${isTandem?2:2}" style="text-align:right;padding:6px">Weight: ${totalWt} lbs</td></tr></tfoot>
+        </table>
+      </div>`;
+  });
+  
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 style="font-size:18px">Preview — ${dateLabel}</h2>
+      <div style="display:flex;gap:8px">
+        <button onclick="printPreview()" style="background:#1b2b3c;color:#fff;border-color:#1b2b3c">&#128438; Print</button>
+        <button onclick="closePreview()">Close</button>
+      </div>
+    </div>
+    <div id="preview-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${groupsHTML}</div>`;
+  
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+}
+
+function closePreview() {
+  const o = document.getElementById('preview-overlay');
+  if (o) o.remove();
+}
+
+function printPreview() {
+  const body = document.getElementById('preview-body');
+  if (!body) return;
+  const existing = document.getElementById('print-container');
+  if (existing) existing.remove();
+  const container = document.createElement('div');
+  container.id = 'print-container';
+  const grpEls = Array.from(body.querySelectorAll('.grp'));
+  for (let i = 0; i < grpEls.length; i += 6) {
+    const page = document.createElement('div');
+    page.className = 'print-page';
+    grpEls.slice(i, i + 6).forEach(g => page.appendChild(g.cloneNode(true)));
+    container.appendChild(page);
+  }
+  // Hide everything else during print
+  const overlay = document.getElementById('preview-overlay');
+  overlay.style.display = 'none';
+  document.body.appendChild(container);
+  window.print();
+  document.body.removeChild(container);
+  overlay.style.display = 'block';
 }
 
 function formatDate(d) {
@@ -973,40 +1090,97 @@ function formatDate(d) {
   return p.length === 3 ? p[1]+'/'+p[2]+'/'+p[0] : d;
 }
 
-// ── PWA INSTALL PROMPT ───────────────────────────────────
+// ── PROFILES ──────────────────────────────────────────
+function addProfile() {
+  const name = document.getElementById('pn').value.trim();
+  if (!name) return document.getElementById('pn').focus();
+  const profile = {
+    name,
+    aircraft: document.getElementById('pac').value.trim(),
+    exit:     document.getElementById('pex').value.trim(),
+    notes:    document.getElementById('pnotes').value.trim()
+  };
+  db.profiles.push(profile);
+  ['pn','pac','pex','pnotes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pn').focus();
+  redraw();
+}
+function removeProfile(i) {
+  db.profiles.splice(i, 1);
+  redraw();
+}
+function editProfile(i) {
+  const p = db.profiles[i];
+  const tagEl = document.getElementById('prof-tag-' + i);
+  if (!tagEl) return;
+  tagEl.innerHTML = `
+    <input id="epn-${i}"  value="${p.name||''}"     placeholder="Name"     style="width:100px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <input id="epac-${i}" value="${p.aircraft||''}" placeholder="Aircraft" style="width:80px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <input id="epex-${i}" value="${p.exit||''}"     placeholder="Exit"     style="width:90px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <input id="epno-${i}" value="${p.notes||''}"    placeholder="Notes"    style="width:130px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <span class="x" style="color:#1b2b3c" onclick="saveProfile(${i})" title="Save">&#10003;</span>
+    <span class="x" onclick="redraw()" title="Cancel">&#x2715;</span>`;
+  document.getElementById('epn-' + i).focus();
+}
+function saveProfile(i) {
+  db.profiles[i] = {
+    name:     document.getElementById('epn-'  + i).value.trim(),
+    aircraft: document.getElementById('epac-' + i).value.trim(),
+    exit:     document.getElementById('epex-' + i).value.trim(),
+    notes:    document.getElementById('epno-' + i).value.trim()
+  };
+  redraw();
+}
+function clearProfiles() {
+  if (!confirm('Clear all profiles? This cannot be undone.')) return;
+  db.profiles = [];
+  redraw();
+}
+function renderProfiles() {
+  const el = document.getElementById('profile-list');
+  if (!el) return;
+  if (!db.profiles || !db.profiles.length) {
+    el.innerHTML = '<span class="none-lbl">None added</span>';
+    return;
+  }
+  el.innerHTML = db.profiles.map((p, i) => `
+    <span class="tag" id="prof-tag-${i}" style="max-width:100%">
+      <span class="tag-name" style="font-weight:bold">${p.name}</span>
+      ${p.aircraft ? `<span class="wt">${p.aircraft}</span>` : ''}
+      ${p.exit ? `<span class="wt">${p.exit}</span>` : ''}
+      ${p.notes ? `<span class="wt" style="color:#555">${p.notes}</span>` : ''}
+      <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editProfile(${i})" title="Edit">&#9998;</span>
+      <span class="x" onclick="removeProfile(${i})">&#x2715;</span>
+    </span>`).join('');
+}
+
+function mkProfileOpts(sel) {
+  let opts = '<option value="">—</option>';
+  if (db.profiles && db.profiles.length) {
+    opts += db.profiles.map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${p.name}</option>`).join('');
+  }
+  return opts;
+}
+function setGrpProfile(gi, val) {
+  db.groups[gi].profile = val;
+  renderManifest();
+}
+
+
 let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  const banner = document.getElementById('install-banner');
-  if (banner) banner.style.display = 'flex';
-});
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('install-btn');
-  if (btn) btn.addEventListener('click', async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    const { outcome } = await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    document.getElementById('install-banner').style.display = 'none';
-  });
 });
 window.addEventListener('appinstalled', () => {
-  const banner = document.getElementById('install-banner');
-  if (banner) banner.style.display = 'none';
   deferredInstallPrompt = null;
 });
 
-// ── PWA SERVICE WORKER REGISTRATION ─────────────────────
 if ('serviceWorker' in navigator) {
-  // Inline the service worker as a blob so no external file is needed
   const swCode = `
-    const CACHE = 'mff-manifest-v2';
-    const URLS  = [self.location.href.replace(/\/sw.*/, '') || '/'];
+    const CACHE = 'mff-manifest-v3';
     self.addEventListener('install', e => {
-      e.waitUntil(
-        caches.open(CACHE).then(c => c.addAll(URLS)).then(() => self.skipWaiting())
-      );
+      self.skipWaiting();
     });
     self.addEventListener('activate', e => {
       e.waitUntil(
@@ -1016,17 +1190,19 @@ if ('serviceWorker' in navigator) {
       );
     });
     self.addEventListener('fetch', e => {
+      if (e.request.method !== 'GET') return;
       e.respondWith(
-        caches.match(e.request).then(cached => {
-          const network = fetch(e.request).then(res => {
-            if (res && res.status === 200) {
-              const clone = res.clone();
-              caches.open(CACHE).then(c => c.put(e.request, clone));
-            }
-            return res;
-          }).catch(() => cached);
-          return cached || network;
-        })
+        caches.open(CACHE).then(cache =>
+          cache.match(e.request).then(cached => {
+            const network = fetch(e.request).then(res => {
+              if (res && res.status === 200 && res.type === 'basic') {
+                cache.put(e.request, res.clone());
+              }
+              return res;
+            }).catch(() => cached);
+            return cached || network;
+          })
+        )
       );
     });
   `;
@@ -1035,7 +1211,6 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(swUrl).catch(() => {});
 }
 
-// ── PWA MANIFEST INJECTION ────────────────────────────────
 (function() {
   const manifest = {
     name: 'MFF Manifest',
