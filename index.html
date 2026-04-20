@@ -102,22 +102,53 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 @media print{
   @page { size: letter portrait; margin: 0.3in; }
-  body{background:#fff;margin:0;font-size:9px}
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
+  body{background:#fff;margin:0;font-family:Arial,sans-serif;font-size:9.5px;color:#111}
   .hdr,.tab-bar,.summary,.hdr-btns,.grp-hd-btns,.manifest-toolbar,.add-row,.eq-add-row,
-  #tab-roster,#tab-equipment{display:none!important}
+  #tab-roster,#tab-equipment,#tab-profiles,.drag-handle{display:none!important}
   #tab-manifest{display:block!important;padding:0}
-  .print-page{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0;page-break-after:always;width:100%;box-sizing:border-box}
-  .print-page:last-child{page-break-after:avoid}
-  .grp{break-inside:avoid;border:1px solid #999;overflow:hidden;min-width:0}
-  .grp table{width:100%;table-layout:fixed}
-  .grp-hd{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:9px;padding:3px 5px}
-  .grp-letter{font-size:11px}
-  select{border:none;appearance:none;-webkit-appearance:none;font-size:9px;padding:1px 0;pointer-events:none;width:100%;background:transparent;color:#000;-webkit-print-color-adjust:exact}
-  td,th{font-size:9px;padding:2px 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  button.sm,button{display:none!important}
-  .counts-row td{font-size:9px}
-  tfoot td{font-size:9px}
   #grid{display:none!important}
+
+  .print-page{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0;page-break-after:always;width:100%;box-sizing:border-box}
+  .print-page:last-child{page-break-after:avoid}
+
+  /* Group card — crisp border */
+  .grp{break-inside:avoid;border:1.5px solid #1b2b3c;border-radius:3px;overflow:hidden;min-width:0;background:#fff}
+  .grp table{width:100%;table-layout:fixed;border-collapse:collapse}
+
+  /* Group header — dark blue bar */
+  .grp-hd{background:#1b2b3c !important;color:#fff !important;font-size:10px;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;gap:4px}
+  .grp-letter{font-size:13px;font-weight:bold;letter-spacing:0.5px}
+  .grp-hd select{background:transparent !important;color:#fff !important;font-weight:bold;border:none;appearance:none;-webkit-appearance:none;font-size:10px;padding:0;pointer-events:none;width:auto;max-width:none}
+  .grp-hd span{color:#8ab4d4 !important;font-weight:normal}
+  .grp-meta{color:#fff !important}
+
+  /* Column headers */
+  thead th{background:#e8edf3 !important;color:#1b2b3c !important;font-weight:bold;font-size:9.5px;padding:4px 5px;border-bottom:1.5px solid #1b2b3c;border-right:1px solid #c5cdd8;text-align:left;text-transform:uppercase;letter-spacing:0.3px}
+  thead th:last-child{border-right:none}
+
+  /* Body rows — alternating shading */
+  tbody tr:nth-child(even){background:#f6f8fb}
+  tbody tr:nth-child(odd){background:#fff}
+  tbody td{padding:3px 5px;border-right:1px solid #dce2ec;border-bottom:1px solid #e8edf3;font-size:9.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+  tbody td:last-child{border-right:none}
+  tbody td:first-child{font-weight:bold;color:#1b2b3c}
+
+  /* Dropdowns in body — render as plain text */
+  tbody select{border:none;appearance:none;-webkit-appearance:none;font-size:9.5px;padding:0;pointer-events:none;width:100%;background:transparent !important;color:inherit;font-weight:inherit}
+
+  /* Counts row (MJ/NS/UI footer before totals) */
+  .counts-row{background:#edf1f6 !important;border-top:1.5px solid #1b2b3c}
+  .counts-row td{font-size:9.5px;padding:3px 5px;font-weight:bold;color:#1b2b3c}
+  .counts-row select{font-weight:bold;color:#1b2b3c;font-size:9.5px}
+
+  /* Totals footer */
+  tfoot tr{background:#1b2b3c !important;color:#fff !important}
+  tfoot td{font-size:10px;padding:5px 6px;font-weight:bold;color:#fff !important;border-top:1.5px solid #1b2b3c}
+  tfoot .num{text-align:right;font-variant-numeric:tabular-nums}
+
+  /* Hide all buttons */
+  button,.sm,.danger{display:none!important}
 }
 .grp.dragging{opacity:0.4}
 .grp.drag-over{border:2px dashed #1b2b3c;background:#e8edf3}
@@ -1469,3 +1500,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
