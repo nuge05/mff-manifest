@@ -105,7 +105,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
   body{background:#fff;margin:0;font-family:Arial,sans-serif;font-size:9.5px;color:#111}
   .hdr,.tab-bar,.summary,.hdr-btns,.grp-hd-btns,.manifest-toolbar,.add-row,.eq-add-row,
-  #tab-roster,#tab-equipment,#tab-profiles,.drag-handle{display:none!important}
+  #tab-roster,#tab-equipment,#tab-profiles,#tab-aircraft,.drag-handle{display:none!important}
   #tab-manifest{display:block!important;padding:0}
   #grid{display:none!important}
 
@@ -178,6 +178,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   <div class="tab active" onclick="goTab('roster')">Roster</div>
   <div class="tab" onclick="goTab('equipment')">Equipment</div>
   <div class="tab" onclick="goTab('profiles')">Profiles</div>
+  <div class="tab" onclick="goTab('aircraft')">Aircraft</div>
   <div class="tab" onclick="goTab('manifest')">Manifest</div>
 </div>
 
@@ -310,9 +311,21 @@ select:focus{outline:none;border-color:#1b2b3c}
     </h3>
     <div class="tag-list" id="profile-list"><span class="none-lbl">None added</span></div>
     <div class="add-row" style="flex-wrap:wrap;gap:6px">
-      <input class="nm" id="pac" placeholder="Aircraft"      style="width:140px" onkeydown="if(event.key==='Enter')addProfile()">
-      <input class="nm" id="pex" placeholder="Exit (H/CE/O)" style="width:140px" onkeydown="if(event.key==='Enter')addProfile()">
+      <input class="nm" id="pex" placeholder="Exit (H/CE/O, H/A/NT, etc.)" style="width:280px" onkeydown="if(event.key==='Enter')addProfile()">
       <button onclick="addProfile()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="tab-aircraft">
+  <div class="roster-col" style="max-width:720px;margin:0 auto">
+    <h3 style="display:flex;align-items:center;justify-content:space-between">Aircraft
+      <button class="sm danger" onclick="clearAircraft()">Clear all</button>
+    </h3>
+    <div class="tag-list" id="aircraft-list"><span class="none-lbl">None added</span></div>
+    <div class="add-row" style="flex-wrap:wrap;gap:6px">
+      <input class="nm" id="acn" placeholder="Aircraft name (e.g. C-130, C-17)" style="width:280px" onkeydown="if(event.key==='Enter')addAircraft()">
+      <button onclick="addAircraft()">+ Add</button>
     </div>
   </div>
 </div>
@@ -353,7 +366,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
-const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], mffGroups:[], tandemGroups:[], mode:'MFF',
+const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], mffGroups:[], tandemGroups:[], mode:'MFF',
   get groups() { return this.mode === 'TANDEM' ? this.tandemGroups : this.mffGroups; },
   set groups(v) { if (this.mode === 'TANDEM') this.tandemGroups = v; else this.mffGroups = v; }
 };
@@ -824,6 +837,8 @@ function renderManifest() {
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
           <span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span>
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'aj',this.value)">${mkPJAJOpts(g.aj)}</select>
+          <span style="margin-left:6px;font-size:10px;color:#8ab4d4">Acft</span>
+          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpAircraft(${gi},this.value)">${mkAircraftOpts(g.aircraft)}</select>
           <span style="margin-left:6px;font-size:10px;color:#8ab4d4">Profile</span>
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpProfile(${gi},this.value)">${mkProfileOpts(g.profile)}</select>
           <span class="grp-meta" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
@@ -882,6 +897,7 @@ function redraw() {
   renderRoster();
   renderEquipment();
   renderProfiles();
+  renderAircraft();
   renderManifest();
   updateSummary();
   saveDB();
@@ -916,6 +932,7 @@ function loadDB() {
     if (saved.ui)          db.ui          = saved.ui;
     if (saved.equipment)   db.equipment   = saved.equipment;
     if (saved.profiles)    db.profiles    = saved.profiles;
+    if (saved.aircraft)    db.aircraft    = saved.aircraft;
     if (saved.mode)        db.mode        = saved.mode;
     // Handle both old (single groups) and new (split) storage
     if (saved.mffGroups)    db.mffGroups    = saved.mffGroups;
@@ -1186,20 +1203,73 @@ function dragEnd(e) {
   dragSrcIdx = null;
 }
 
+// ── AIRCRAFT ──────────────────────────────────────────
+function addAircraft() {
+  const name = document.getElementById('acn').value.trim();
+  if (!name) return document.getElementById('acn').focus();
+  db.aircraft.push({ name });
+  document.getElementById('acn').value = '';
+  document.getElementById('acn').focus();
+  redraw();
+}
+function removeAircraft(i) {
+  db.aircraft.splice(i, 1);
+  redraw();
+}
+function editAircraft(i) {
+  const a = db.aircraft[i];
+  const tagEl = document.getElementById('ac-tag-' + i);
+  if (!tagEl) return;
+  tagEl.innerHTML = `
+    <input id="eacn-${i}" value="${a.name||''}" placeholder="Aircraft" style="width:220px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <span class="x" style="color:#1b2b3c" onclick="saveAircraft(${i})" title="Save">&#10003;</span>
+    <span class="x" onclick="redraw()" title="Cancel">&#x2715;</span>`;
+  document.getElementById('eacn-' + i).focus();
+}
+function saveAircraft(i) {
+  const name = document.getElementById('eacn-' + i).value.trim();
+  if (!name) return alert('Name required');
+  db.aircraft[i] = { name };
+  redraw();
+}
+function clearAircraft() {
+  if (!confirm('Clear all aircraft? This cannot be undone.')) return;
+  db.aircraft = [];
+  redraw();
+}
+function renderAircraft() {
+  const el = document.getElementById('aircraft-list');
+  if (!el) return;
+  if (!db.aircraft || !db.aircraft.length) {
+    el.innerHTML = '<span class="none-lbl">None added</span>';
+    return;
+  }
+  el.innerHTML = db.aircraft.map((a, i) => `
+    <span class="tag" id="ac-tag-${i}">
+      <span class="tag-name">${a.name}</span>
+      <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editAircraft(${i})" title="Edit">&#9998;</span>
+      <span class="x" onclick="removeAircraft(${i})">&#x2715;</span>
+    </span>`).join('');
+}
+function mkAircraftOpts(sel) {
+  let opts = '<option value="">—</option>';
+  if (db.aircraft && db.aircraft.length) {
+    opts += db.aircraft.map(a => `<option value="${a.name}"${a.name === sel ? ' selected' : ''}>${a.name}</option>`).join('');
+  }
+  return opts;
+}
+function setGrpAircraft(gi, val) {
+  db.groups[gi].aircraft = val;
+  renderManifest();
+}
+
 // ── PROFILES ──────────────────────────────────────────
 function addProfile() {
-  const aircraft = document.getElementById('pac').value.trim();
-  const exit     = document.getElementById('pex').value.trim();
-  if (!aircraft && !exit) return document.getElementById('pac').focus();
-  const profile = {
-    name: `${aircraft}${aircraft && exit ? ' - ' : ''}${exit}`.trim(),
-    aircraft,
-    exit
-  };
-  db.profiles.push(profile);
-  document.getElementById('pac').value = '';
+  const exit = document.getElementById('pex').value.trim();
+  if (!exit) return document.getElementById('pex').focus();
+  db.profiles.push({ name: exit, exit });
   document.getElementById('pex').value = '';
-  document.getElementById('pac').focus();
+  document.getElementById('pex').focus();
   redraw();
 }
 function removeProfile(i) {
@@ -1211,20 +1281,14 @@ function editProfile(i) {
   const tagEl = document.getElementById('prof-tag-' + i);
   if (!tagEl) return;
   tagEl.innerHTML = `
-    <input id="epac-${i}" value="${p.aircraft||''}" placeholder="Aircraft" style="width:110px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
-    <input id="epex-${i}" value="${p.exit||''}"     placeholder="Exit"     style="width:110px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <input id="epex-${i}" value="${p.exit||''}" placeholder="Exit" style="width:220px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
     <span class="x" style="color:#1b2b3c" onclick="saveProfile(${i})" title="Save">&#10003;</span>
     <span class="x" onclick="redraw()" title="Cancel">&#x2715;</span>`;
-  document.getElementById('epac-' + i).focus();
+  document.getElementById('epex-' + i).focus();
 }
 function saveProfile(i) {
-  const aircraft = document.getElementById('epac-' + i).value.trim();
-  const exit     = document.getElementById('epex-' + i).value.trim();
-  db.profiles[i] = {
-    aircraft,
-    exit,
-    name: `${aircraft}${aircraft && exit ? ' - ' : ''}${exit}`.trim()
-  };
+  const exit = document.getElementById('epex-' + i).value.trim();
+  db.profiles[i] = { exit, name: exit };
   redraw();
 }
 function clearProfiles() {
@@ -1241,8 +1305,7 @@ function renderProfiles() {
   }
   el.innerHTML = db.profiles.map((p, i) => `
     <span class="tag" id="prof-tag-${i}" style="max-width:100%">
-      ${p.aircraft ? `<span class="tag-name">${p.aircraft}</span>` : ''}
-      ${p.exit ? `<span class="wt">${p.exit}</span>` : ''}
+      <span class="tag-name">${p.exit || p.name}</span>
       <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editProfile(${i})" title="Edit">&#9998;</span>
       <span class="x" onclick="removeProfile(${i})">&#x2715;</span>
     </span>`).join('');
