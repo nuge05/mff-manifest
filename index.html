@@ -837,14 +837,20 @@ function renderManifest() {
         <div>
           <span class="drag-handle" title="Drag to reorder" style="cursor:grab;padding:0 8px 0 2px;font-size:14px;color:#8ab4d4;user-select:none">&#8801;</span>
           <span class="grp-letter">GRP ${g.letter}</span>
-          <span style="margin-left:8px;font-size:10px;color:#8ab4d4">PJ</span>
-          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
-          <span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span>
-          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'aj',this.value)">${mkPJAJOpts(g.aj)}</select>
-          <span style="margin-left:6px;font-size:10px;color:#8ab4d4">Acft</span>
-          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpAircraft(${gi},this.value)">${mkAircraftOpts(g.aircraft)}</select>
-          <span style="margin-left:6px;font-size:10px;color:#8ab4d4">Profile</span>
-          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpProfile(${gi},this.value)">${mkProfileOpts(g.profile)}</select>
+          <div style="display:inline-flex;flex-direction:column;gap:3px;margin-left:8px;vertical-align:middle">
+            <div style="display:flex;align-items:center;gap:3px">
+              <span style="font-size:10px;color:#8ab4d4;width:38px">PJ</span>
+              <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
+              <span style="font-size:10px;color:#8ab4d4;margin-left:6px;width:38px">AJ</span>
+              <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;max-width:80px" onchange="setGrpPJAJ(${gi},'aj',this.value)">${mkPJAJOpts(g.aj)}</select>
+            </div>
+            <div style="display:flex;align-items:center;gap:3px">
+              <span style="font-size:10px;color:#8ab4d4;width:38px">Acft</span>
+              <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;max-width:80px" onchange="setGrpAircraft(${gi},this.value)">${mkAircraftOpts(g.aircraft)}</select>
+              <span style="font-size:10px;color:#8ab4d4;margin-left:6px;width:38px">Profile</span>
+              <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;max-width:80px" onchange="setGrpProfile(${gi},this.value)">${mkProfileOpts(g.profile)}</select>
+            </div>
+          </div>
           <span class="grp-meta" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
         </div>
         <div class="grp-hd-btns">
