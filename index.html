@@ -551,6 +551,17 @@ function moveGroup(gi, dir) {
   redraw();
 }
 
+function moveGroupTo(gi, newIdxStr) {
+  const newIdx = parseInt(newIdxStr);
+  if (isNaN(newIdx) || newIdx === gi || newIdx < 0 || newIdx >= db.groups.length) {
+    redraw();
+    return;
+  }
+  const moved = db.groups.splice(gi, 1)[0];
+  db.groups.splice(newIdx, 0, moved);
+  redraw();
+}
+
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
   db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', pj: '', aj: '' });
@@ -771,6 +782,9 @@ function renderManifest() {
       <div class="grp-hd">
         <div>
           <span class="grp-letter">GRP ${g.letter}</span>
+          <select title="Move to position" style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 4px;margin-left:6px" onchange="moveGroupTo(${gi},this.value)">
+            ${db.groups.map((_, j) => `<option value="${j}"${j === gi ? ' selected' : ''}>${j + 1}</option>`).join('')}
+          </select>
           <span style="margin-left:8px;font-size:10px;color:#8ab4d4">PJ</span>
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
           <span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span>
@@ -780,8 +794,6 @@ function renderManifest() {
           <span class="grp-meta" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
         </div>
         <div class="grp-hd-btns">
-          <button onclick="moveGroup(${gi},-1)" title="Move up" ${gi === 0 ? 'disabled' : ''}>&#9650;</button>
-          <button onclick="moveGroup(${gi},1)" title="Move down" ${gi === db.groups.length - 1 ? 'disabled' : ''}>&#9660;</button>
           <button onclick="addSlot(${gi})">+ Row</button>
           <button class="danger" onclick="removeGroup(${gi})">Remove</button>
         </div>
