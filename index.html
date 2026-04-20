@@ -175,15 +175,15 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <!-- TAB BAR -->
 <div class="tab-bar">
-  <div class="tab active" onclick="goTab('roster')">Roster</div>
-  <div class="tab" onclick="goTab('equipment')">Equipment</div>
-  <div class="tab" onclick="goTab('profiles')">Profiles</div>
+  <div class="tab active" onclick="goTab('manifest')">Manifest</div>
+  <div class="tab" onclick="goTab('roster')">Roster</div>
   <div class="tab" onclick="goTab('aircraft')">Aircraft</div>
-  <div class="tab" onclick="goTab('manifest')">Manifest</div>
+  <div class="tab" onclick="goTab('profiles')">Profiles</div>
+  <div class="tab" onclick="goTab('equipment')">Equipment</div>
 </div>
 
 <!-- ROSTER PANEL -->
-<div class="panel active" id="tab-roster">
+<div class="panel" id="tab-roster">
   <div class="roster-cols">
     <div class="roster-col">
       <h3 style="display:flex;align-items:center;justify-content:space-between">Students
@@ -330,7 +330,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   </div>
 </div>
 
-<div class="panel" id="tab-manifest">
+<div class="panel active" id="tab-manifest">
   <div class="manifest-toolbar">
     <div style="display:flex;background:#e8edf3;border-radius:4px;padding:2px;gap:2px;margin-right:8px">
       <button id="mode-mff" onclick="setMode('MFF')" style="background:#1b2b3c;color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:bold;border-radius:3px">MFF</button>
@@ -1563,4 +1563,3 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
-
