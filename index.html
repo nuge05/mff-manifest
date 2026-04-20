@@ -624,7 +624,13 @@ function mkStrapOpts(sel, gi) {
 }
 
 function usedInGroup(gi, field) {
-  return new Set(db.groups[gi].slots.map(sl => sl[field]).filter(v => v));
+  // Return all names used in this group across ALL columns so a person only appears once per group
+  const g = db.groups[gi];
+  const used = new Set();
+  g.slots.forEach(sl => {
+    ['stu','inst','ui','tm','pass'].forEach(f => { if (sl[f]) used.add(sl[f]); });
+  });
+  return used;
 }
 function getLastName(name) {
   // name format: "Last, First" or "Last Name, First"
@@ -1463,4 +1469,3 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
-
