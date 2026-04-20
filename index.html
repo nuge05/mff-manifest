@@ -102,19 +102,22 @@ select:focus{outline:none;border-color:#1b2b3c}
 .manifest-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
 
 @media print{
-  body{background:#fff;margin:0}
+  @page { size: letter portrait; margin: 0.3in; }
+  body{background:#fff;margin:0;font-size:9px}
   .hdr,.tab-bar,.summary,.hdr-btns,.grp-hd-btns,.manifest-toolbar,.add-row,.eq-add-row,
   #tab-roster,#tab-equipment{display:none!important}
-  #tab-manifest{display:block!important;padding:4px}
-  .print-page{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px;page-break-after:always}
+  #tab-manifest{display:block!important;padding:0}
+  .print-page{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0;page-break-after:always;width:100%;box-sizing:border-box}
   .print-page:last-child{page-break-after:avoid}
-  .grp{break-inside:avoid;border:1px solid #999}
-  .grp-hd{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  select{border:none;appearance:none;-webkit-appearance:none;font-size:11px;padding:2px 0;pointer-events:none}
-  td,th{font-size:10px;padding:3px 5px}
-  button.sm{display:none!important}
-  .counts-row td{font-size:10px}
-  tfoot td{font-size:10px}
+  .grp{break-inside:avoid;border:1px solid #999;overflow:hidden;min-width:0}
+  .grp table{width:100%;table-layout:fixed}
+  .grp-hd{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:9px;padding:3px 5px}
+  .grp-letter{font-size:11px}
+  select{border:none;appearance:none;-webkit-appearance:none;font-size:9px;padding:1px 0;pointer-events:none;width:100%;background:transparent;color:#000;-webkit-print-color-adjust:exact}
+  td,th{font-size:9px;padding:2px 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  button.sm,button{display:none!important}
+  .counts-row td{font-size:9px}
+  tfoot td{font-size:9px}
   #grid{display:none!important}
 }
 </style>
@@ -309,7 +312,10 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
-const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], groups:[], mode:'MFF' };
+const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], mffGroups:[], tandemGroups:[], mode:'MFF',
+  get groups() { return this.mode === 'TANDEM' ? this.tandemGroups : this.mffGroups; },
+  set groups(v) { if (this.mode === 'TANDEM') this.tandemGroups = v; else this.mffGroups = v; }
+};
 
 // ── TABS ──────────────────────────────────────────────────
 function goTab(t) {
@@ -570,7 +576,7 @@ function mkStrapOpts(sel, gi) {
   if (db.straps.length) {
     opts += '<optgroup label="— Straps —">' +
       db.straps.filter(s => s.name === sel || !used.has(s.name))
-        .map(s => `<option value="${s.name}"${s.name === sel ? ' selected' : ''}>${s.name}</option>`).join('') +
+        .map(s => `<option value="${s.name}"${s.name === sel ? ' selected' : ''}>${shortLabel(s, db.straps)}</option>`).join('') +
       '</optgroup>';
   }
   if (db.flight1.length) {
@@ -693,10 +699,6 @@ function setGrpLabel(gi, field, val) {
 }
 
 function setMode(mode) {
-  if (db.groups.length && mode !== db.mode) {
-    if (!confirm('Switching between MFF and Tandem will clear current groups. Continue?')) return;
-    db.groups = [];
-  }
   db.mode = mode;
   // Update button styles
   const mffBtn = document.getElementById('mode-mff');
@@ -708,8 +710,7 @@ function setMode(mode) {
     tdBtn.style.background = '#1b2b3c'; tdBtn.style.color = '#fff';
     mffBtn.style.background = 'transparent'; mffBtn.style.color = '#555';
   }
-  renderManifest();
-  updateSummary();
+  redraw();
 }
 
 function renderManifest() {
@@ -778,7 +779,7 @@ function renderManifest() {
         </tr>
         <tfoot>
           <tr>
-            <td style="font-weight:bold;padding:5px 6px">Total jumpers: ${db.groups.reduce((a,g)=>a+g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0),0)}</td>
+            <td style="font-weight:bold;padding:5px 6px">Total jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)}</td>
             <td colspan="${db.mode === 'TANDEM' ? 3 : 2}" style="text-align:right;padding-right:10px">Total weight</td>
             <td class="num">${tot} lbs</td>
           </tr>
@@ -815,7 +816,18 @@ function redraw() {
 
 function saveDB() {
   try {
-    localStorage.setItem('mff_db_current', JSON.stringify(db));
+    const snapshot = {
+      students: db.students,
+      instructors: db.instructors,
+      straps: db.straps,
+      flight1: db.flight1,
+      ui: db.ui,
+      equipment: db.equipment,
+      mffGroups: db.mffGroups,
+      tandemGroups: db.tandemGroups,
+      mode: db.mode
+    };
+    localStorage.setItem('mff_db_current', JSON.stringify(snapshot));
   } catch(e) {}
 }
 
@@ -830,8 +842,15 @@ function loadDB() {
     if (saved.flight1)     db.flight1     = saved.flight1;
     if (saved.ui)          db.ui          = saved.ui;
     if (saved.equipment)   db.equipment   = saved.equipment;
-    if (saved.groups)      db.groups      = saved.groups;
     if (saved.mode)        db.mode        = saved.mode;
+    // Handle both old (single groups) and new (split) storage
+    if (saved.mffGroups)    db.mffGroups    = saved.mffGroups;
+    if (saved.tandemGroups) db.tandemGroups = saved.tandemGroups;
+    // Migration: if old 'groups' key exists, put it into the right bucket based on mode
+    if (saved.groups && !saved.mffGroups && !saved.tandemGroups) {
+      if (saved.mode === 'TANDEM') db.tandemGroups = saved.groups;
+      else db.mffGroups = saved.groups;
+    }
   } catch(e) {}
 }
 
