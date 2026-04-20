@@ -776,7 +776,7 @@ function renderManifest() {
           <span style="margin-left:6px;font-size:10px;color:#8ab4d4">AJ</span>
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'aj',this.value)">${mkPJAJOpts(g.aj)}</select>
           <span style="margin-left:6px;font-size:10px;color:#8ab4d4">Profile</span>
-          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:110px" onchange="setGrpProfile(${gi},this.value)">${mkProfileOpts(g.profile)}</select>
+          <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpProfile(${gi},this.value)">${mkProfileOpts(g.profile)}</select>
           <span class="grp-meta" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
         </div>
         <div class="grp-hd-btns">
@@ -1423,4 +1423,3 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
-
