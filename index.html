@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+d<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -854,81 +854,9 @@ function loadDB() {
   } catch(e) {}
 }
 
-// Pre-load instructors only if nothing in storage
-if (!db.instructors.length) db.instructors = [
-  {name:"Anderson, OJ",wt:230},
-  {name:"Andrews, Greg",wt:210},
-  {name:"Bathhurst, Rob",wt:195},
-  {name:"Berg, Thomas",wt:190},
-  {name:"Bodie, Will",wt:175},
-  {name:"Brewer J., James",wt:190},
-  {name:"Brock, Bryce",wt:185},
-  {name:"Buchard, Simon",wt:180},
-  {name:"Colclasure, JC",wt:225},
-  {name:"Cowan, Jim",wt:200},
-  {name:"Fekete, Stephen",wt:180},
-  {name:"Fernanado, Nas",wt:175},
-  {name:"Friedman, Mike",wt:160},
-  {name:"Gregg, Thomas",wt:200},
-  {name:"Gunn, Johnny",wt:185},
-  {name:"Hammond TJ, Thomas",wt:215},
-  {name:"Hendo, Jay",wt:190},
-  {name:"Julio, Michael",wt:235},
-  {name:"Kilby, Kirk",wt:220},
-  {name:"Lamb, Huck",wt:220},
-  {name:"Lane, Jack",wt:190},
-  {name:"Locke A., Andy",wt:200},
-  {name:"Losey, Ty",wt:190},
-  {name:"Malchiodi, Andy",wt:160},
-  {name:"Mazzetta, Petter",wt:180},
-  {name:"Mills, Travis",wt:180},
-  {name:"Naughton, Luke",wt:200},
-  {name:"Nugent, Jason",wt:210},
-  {name:"Reeves J., James",wt:190},
-  {name:"Robison, Seth",wt:160},
-  {name:"Ross, Chad",wt:175},
-  {name:"Russel, Jay",wt:160},
-  {name:"Smith R., Rusty",wt:205},
-  {name:"Smith S., Sarah",wt:135},
-  {name:"Stewart, Andy",wt:210},
-  {name:"Stocum, Aaron",wt:250},
-  {name:"Strange, Stephanie",wt:130},
-  {name:"Thompson, Jeff",wt:215},
-  {name:"Tranter, Jimmy",wt:160},
-  {name:"Trimble, Rob",wt:185},
-  {name:"Weaver, Caleb",wt:200},
-  {name:"Weyher, Jesse",wt:210},
-  {name:"Wray B., Bill",wt:175},
-  {name:"Zayas, Frank",wt:165}
-];
 
-// Pre-load students only if nothing in storage
-if (!db.students.length) db.students = [
-  {name:"Watters, John",wt:155},
-  {name:"Wiens, Evan",wt:160},
-  {name:"Mcclellan, Logan",wt:160},
-  {name:"Morales, Justin",wt:155},
-  {name:"Caballero, Enrique",wt:165},
-  {name:"Grant, Karl",wt:170},
-  {name:"Shouse, Zealand",wt:175},
-  {name:"Baccelieri, Thomas",wt:175},
-  {name:"Knode, Mitchel",wt:200},
-  {name:"Smith, Jalen",wt:190},
-  {name:"Sykes, Robert",wt:190},
-  {name:"Feather, Casey",wt:190},
-  {name:"Fallon, Timothy",wt:190},
-  {name:"Landers, Brandon",wt:190},
-  {name:"Crutchfield, Tyler",wt:200},
-  {name:"Brannon, William",wt:210},
-  {name:"Henjum, Wyatt",wt:205},
-  {name:"Basinger, Kody",wt:200},
-  {name:"Bell, Marshall",wt:205},
-  {name:"Fisher, Jonathon",wt:215},
-  {name:"Staffen, Mark",wt:215},
-  {name:"Hostetler, Benjamin",wt:220},
-  {name:"Heredia, Luis",wt:210},
-  {name:"Nordstrom, Valentino",wt:210}
-];
+
+
 
 // Load saved data from localStorage (overrides defaults)
 loadDB();
