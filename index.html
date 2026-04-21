@@ -641,7 +641,16 @@ function slotWt(sl) {
   const tmWt = pWt(sl.tm, db.instructors) || pWt(sl.tm, db.flight1) || pWt(sl.tm, db.ui);
   return pWt(sl.stu, db.students) + instWt + uiWt + tmWt + pWt(sl.pass, db.students);
 }
-function grpTot(g)  { return g.slots.reduce((a, sl) => a + slotWt(sl), 0); }
+function eqWt(label) {
+  if (!label) return 0;
+  const item = (db.equipment || []).find(e => e.name === label);
+  return item ? (item.wt || 0) : 0;
+}
+function grpTot(g)  {
+  const slotSum = g.slots.reduce((a, sl) => a + slotWt(sl), 0);
+  const eqSum = mjCnt(g) * eqWt(g.mjLabel) + nsCnt(g) * eqWt(g.nsLabel) + uiCnt(g) * eqWt(g.uiLabel);
+  return slotSum + eqSum;
+}
 function mjCnt(g)   { return g.slots.filter(sl => sl.stu).length; }
 function nsCnt(g)   { return g.slots.filter(sl => sl.inst).length; }
 function uiCnt(g)   { return g.slots.filter(sl => sl.ui).length; }
@@ -932,6 +941,8 @@ function saveDB() {
       flight1: db.flight1,
       ui: db.ui,
       equipment: db.equipment,
+      profiles: db.profiles,
+      aircraft: db.aircraft,
       mffGroups: db.mffGroups,
       tandemGroups: db.tandemGroups,
       mode: db.mode
