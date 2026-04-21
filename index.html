@@ -160,6 +160,11 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 
 
+  /* Hide the last column (remove-row button) in group tables */
+  .grp table thead th:last-child,
+  .grp table tbody td:last-child,
+  .grp table .counts-row td:last-child{display:none !important}
+
   /* Hide all buttons */
   button,.sm,.danger{display:none!important}
 }
@@ -773,9 +778,19 @@ function mkPJAJOpts(sel) {
       db.instructors.map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.instructors)}</option>`).join('') +
       '</optgroup>';
   }
+  if (db.flight1 && db.flight1.length) {
+    opts += '<optgroup label="Flight-1">' +
+      db.flight1.map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.flight1)}</option>`).join('') +
+      '</optgroup>';
+  }
+  if (db.ui && db.ui.length) {
+    opts += '<optgroup label="UI">' +
+      db.ui.map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.ui)}</option>`).join('') +
+      '</optgroup>';
+  }
   if (db.straps.length) {
     opts += '<optgroup label="Straps">' +
-      db.straps.map(s => `<option value="${s.name}"${s.name === sel ? ' selected' : ''}>${s.name}</option>`).join('') +
+      db.straps.map(s => `<option value="${s.name}"${s.name === sel ? ' selected' : ''}>${shortLabel(s, db.straps)}</option>`).join('') +
       '</optgroup>';
   }
   return opts;
