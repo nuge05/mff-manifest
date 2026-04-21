@@ -150,17 +150,15 @@ select:focus{outline:none;border-color:#1b2b3c}
 
   /* Totals footer — DARK TEXT on WHITE for reliable print */
   tfoot tr{background:#fff !important}
-  tfoot tr td{background:#fff !important;color:#000 !important;font-size:11px !important;padding:6px 6px !important;font-weight:bold !important;border-top:3px double #000;letter-spacing:0.2px;text-transform:uppercase;white-space:nowrap;overflow:visible}
+  tfoot tr td{background:#fff !important;color:#000 !important;font-size:11px !important;padding:6px 6px !important;font-weight:bold !important;border-top:3px double #000;letter-spacing:0.2px;text-transform:uppercase;white-space:nowrap !important;overflow:visible}
   tfoot tr td *{color:#000 !important}
-  tfoot .num{text-align:right !important;font-variant-numeric:tabular-nums;font-size:12px !important;color:#000 !important;font-weight:bold !important;padding-right:8px !important;white-space:nowrap;overflow:visible}
+  tfoot tr td:last-child{font-variant-numeric:tabular-nums;font-size:12px !important;text-align:right !important}
 
   /* Notes box */
   .notes-box{border-top:1.5px solid #1b2b3c;padding:4px 6px;background:#fff;min-height:55px}
   .notes-box > div{min-height:50px;border-bottom:1px solid #ccc}
 
 
-  /* Ensure the weight number cell has enough room */
-  tfoot tr td.num{width:60px !important;min-width:55px;text-align:right !important}
 
   /* Hide all buttons */
   button,.sm,.danger{display:none!important}
@@ -893,9 +891,8 @@ function renderManifest() {
         </tr>
         <tfoot>
           <tr>
-            <td style="font-weight:bold;padding:5px 6px" colspan="${db.mode === 'TANDEM' ? 3 : 2}">Total jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)} &nbsp;·&nbsp; Canopies: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0),0)}</td>
-            <td style="text-align:right;padding-right:6px;white-space:nowrap">Total weight</td>
-            <td class="num">${tot} lbs</td>
+            <td style="font-weight:bold;padding:5px 6px" colspan="${db.mode === 'TANDEM' ? 2 : 1}">Jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)} &nbsp;·&nbsp; Canopies: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0),0)}</td>
+            <td colspan="${db.mode === 'TANDEM' ? 2 : 2}" style="text-align:right;padding:5px 6px;white-space:nowrap;font-weight:bold">Wt: ${tot} lbs</td>
           </tr>
         </tfoot>
       </table>
