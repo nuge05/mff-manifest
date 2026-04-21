@@ -659,7 +659,7 @@ function jumperCnt(g) { return g.slots.filter(sl => sl.stu || sl.inst).length; }
 
 function mkStrapOpts(sel, gi) {
   const used = gi !== undefined ? usedInGroup(gi, 'ui') : new Set();
-  let opts = '<option value="">—</option>';
+  let opts = '<option value=""></option>';
   if (db.instructors.length) {
     opts += '<optgroup label="— Instructors —">' +
       db.instructors.filter(p => p.name === sel || !used.has(p.name))
@@ -722,7 +722,7 @@ function mkOpts(list, sel, gi, field) {
   const used = gi !== undefined ? usedInGroup(gi, field) : new Set();
   const isStudent = list === db.students;
   const isInstructor = list === db.instructors;
-  let opts = '<option value="">—</option>';
+  let opts = '<option value=""></option>';
   if (isInstructor) {
     // Combined dropdown: Instructors + Flight-1 + UI
     if (db.instructors.length) {
@@ -760,12 +760,12 @@ function mkOpts(list, sel, gi, field) {
 function mkEqOpts(sel) {
   const fixed = [{name:'MJ', wt:50}, {name:'NS', wt:22}];
   const all = [...fixed, ...db.equipment.filter(e => e.name !== 'MJ' && e.name !== 'NS')];
-  return `<option value="">—</option>` +
+  return `<option value=""></option>` +
     all.map(e => `<option value="${e.name}"${e.name === sel ? ' selected' : ''}>${e.name}</option>`).join('');
 }
 
 function mkPJAJOpts(sel) {
-  let opts = '<option value="">—</option>';
+  let opts = '<option value=""></option>';
   if (db.instructors.length) {
     opts += '<optgroup label="Instructors">' +
       db.instructors.map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${shortLabel(p, db.instructors)}</option>`).join('') +
@@ -1283,7 +1283,7 @@ function renderAircraft() {
     </span>`).join('');
 }
 function mkAircraftOpts(sel) {
-  let opts = '<option value="">—</option>';
+  let opts = '<option value=""></option>';
   if (db.aircraft && db.aircraft.length) {
     opts += db.aircraft.map(a => `<option value="${a.name}"${a.name === sel ? ' selected' : ''}>${a.name}</option>`).join('');
   }
@@ -1343,7 +1343,7 @@ function renderProfiles() {
 }
 
 function mkProfileOpts(sel) {
-  let opts = '<option value="">—</option>';
+  let opts = '<option value=""></option>';
   if (db.profiles && db.profiles.length) {
     opts += db.profiles.map(p => `<option value="${p.name}"${p.name === sel ? ' selected' : ''}>${p.name}</option>`).join('');
   }
@@ -1594,4 +1594,3 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
-
