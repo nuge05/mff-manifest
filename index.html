@@ -886,8 +886,8 @@ function renderManifest() {
       <div class="grp-hd">
         <div>
           <span class="drag-handle" title="Drag to reorder" style="cursor:grab;padding:0 8px 0 2px;font-size:14px;color:#8ab4d4;user-select:none">&#8801;</span>
-          <span class="grp-letter">GRP ${g.letter}</span>
-          <select title="Group name" style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 4px;margin-left:8px;max-width:110px" onchange="setGrpName(${gi},this.value)">${mkGroupNameOpts(g.customName)}</select>
+          <span class="grp-letter">GRP</span>
+          <select title="Group label" style="font-size:14px;font-weight:bold;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 6px;margin-left:6px;min-width:50px" onchange="setGrpName(${gi},this.value)">${mkGrpLetterOpts(g.customName, g.letter)}</select>
           <div style="display:inline-flex;flex-direction:column;gap:3px;margin-left:8px;vertical-align:middle">
             <div style="display:flex;align-items:center;gap:3px">
               <span style="font-size:10px;color:#8ab4d4;width:38px">PJ</span>
@@ -1331,6 +1331,14 @@ function mkGroupNameOpts(sel) {
   }
   return opts;
 }
+function mkGrpLetterOpts(sel, defaultLetter) {
+  // Include the default letter (A, B, C, D, etc.) plus all custom names
+  let opts = `<option value=""${!sel ? ' selected' : ''}>${defaultLetter}</option>`;
+  if (db.groupNames && db.groupNames.length) {
+    opts += db.groupNames.map(a => `<option value="${a.name}"${a.name === sel ? ' selected' : ''}>${a.name}</option>`).join('');
+  }
+  return opts;
+}
 function setGrpName(gi, val) {
   db.groups[gi].customName = val;
   redraw();
@@ -1696,3 +1704,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
