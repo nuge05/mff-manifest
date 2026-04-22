@@ -128,18 +128,18 @@ select:focus{outline:none;border-color:#1b2b3c}
   .grp-meta{color:#fff !important;font-weight:bold !important;font-size:10px !important;white-space:nowrap}
 
   /* Column headers — white bg, bold black text with bottom rule for reliability */
-  thead th{background:#fff !important;color:#000 !important;font-weight:900 !important;font-size:11px !important;padding:6px 6px;border-right:1px solid #000;border-bottom:2.5px solid #000;text-align:left;text-transform:uppercase;letter-spacing:0.5px}
+  thead th{background:#fff !important;color:#000 !important;font-weight:900 !important;font-size:10px !important;padding:5px 4px;border-right:1px solid #000;border-bottom:2.5px solid #000;text-align:left;text-transform:uppercase;letter-spacing:0.3px}
   thead th:last-child{border-right:none}
 
   /* Body rows — alternating shading */
   tbody tr:nth-child(even){background:#f0f3f8 !important}
   tbody tr:nth-child(odd){background:#fff !important}
-  tbody td{padding:4px 6px;border-right:1px solid #ccc;border-bottom:1px solid #e0e4ec;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;color:#000 !important}
+  tbody td{padding:3px 5px;border-right:1px solid #ccc;border-bottom:1px solid #e0e4ec;font-size:9.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;color:#000 !important}
   tbody td:last-child{border-right:none}
   tbody td:first-child{font-weight:bold;color:#1b2b3c !important}
 
   /* Body dropdowns — as plain text */
-  tbody select{border:none;appearance:none;-webkit-appearance:none;font-size:10.5px;padding:0;pointer-events:none;width:100%;background:transparent !important;color:#000 !important;font-weight:inherit}
+  tbody select{border:none;appearance:none;-webkit-appearance:none;font-size:9.5px;padding:0;pointer-events:none;width:100%;background:transparent !important;color:#000 !important;font-weight:inherit;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
   /* Counts row (MJ/NS/UI with counts) — BLACK text ensures readability */
   .counts-row{background:#fff !important;border-top:2px solid #000}
@@ -896,6 +896,11 @@ function renderManifest() {
       </div>
       <div style="overflow-x:auto">
       <table style="min-width:400px">
+        <colgroup>
+          ${db.mode === 'TANDEM' 
+            ? '<col style="width:24%"><col style="width:24%"><col style="width:24%"><col style="width:24%"><col style="width:4%">' 
+            : '<col style="width:30%"><col style="width:32%"><col style="width:34%"><col style="width:4%">'}
+        </colgroup>
         <thead><tr>
           ${db.mode === 'TANDEM' ? '<th>TM</th><th>Pass</th><th>Instructor</th><th>Straps</th>' : '<th>Student</th><th>Instructor</th><th>UI/VID/Strap</th>'}
           <th></th>
