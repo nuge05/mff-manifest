@@ -107,7 +107,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
   body{background:#fff;margin:0;font-family:Arial,sans-serif;font-size:10px;color:#111}
   .hdr,.tab-bar,.summary,.hdr-btns,.grp-hd-btns,.manifest-toolbar,.add-row,.eq-add-row,
-  #tab-roster,#tab-equipment,#tab-profiles,#tab-aircraft,.drag-handle{display:none!important}
+  #tab-roster,#tab-equipment,#tab-profiles,#tab-aircraft,#tab-groups,.drag-handle{display:none!important}
   #tab-manifest{display:block!important;padding:0}
   #grid{display:none!important}
 
@@ -198,6 +198,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 <div class="tab-bar">
   <div class="tab active" onclick="goTab('manifest')">Manifest</div>
   <div class="tab" onclick="goTab('roster')">Roster</div>
+  <div class="tab" onclick="goTab('groups')">Groups</div>
   <div class="tab" onclick="goTab('aircraft')">Aircraft</div>
   <div class="tab" onclick="goTab('profiles')">Profiles</div>
   <div class="tab" onclick="goTab('equipment')">Equipment</div>
@@ -338,6 +339,19 @@ select:focus{outline:none;border-color:#1b2b3c}
   </div>
 </div>
 
+<div class="panel" id="tab-groups">
+  <div class="roster-col" style="max-width:720px;margin:0 auto">
+    <h3 style="display:flex;align-items:center;justify-content:space-between">Groups
+      <button class="sm danger" onclick="clearGroupNames()">Clear all</button>
+    </h3>
+    <div class="tag-list" id="groupname-list"><span class="none-lbl">None added</span></div>
+    <div class="add-row" style="flex-wrap:wrap;gap:6px">
+      <input class="nm" id="gnn" placeholder="Group name (e.g. Alpha, Night Ops)" style="width:280px" onkeydown="if(event.key==='Enter')addGroupName()">
+      <button onclick="addGroupName()">+ Add</button>
+    </div>
+  </div>
+</div>
+
 <div class="panel" id="tab-aircraft">
   <div class="roster-col" style="max-width:720px;margin:0 auto">
     <h3 style="display:flex;align-items:center;justify-content:space-between">Aircraft
@@ -387,7 +401,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
-const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], mffGroups:[], tandemGroups:[], mode:'MFF',
+const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], groupNames:[], mffGroups:[], tandemGroups:[], mode:'MFF',
   get groups() { return this.mode === 'TANDEM' ? this.tandemGroups : this.mffGroups; },
   set groups(v) { if (this.mode === 'TANDEM') this.tandemGroups = v; else this.mffGroups = v; }
 };
@@ -873,6 +887,7 @@ function renderManifest() {
         <div>
           <span class="drag-handle" title="Drag to reorder" style="cursor:grab;padding:0 8px 0 2px;font-size:14px;color:#8ab4d4;user-select:none">&#8801;</span>
           <span class="grp-letter">GRP ${g.letter}</span>
+          <select title="Group name" style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 4px;margin-left:8px;max-width:110px" onchange="setGrpName(${gi},this.value)">${mkGroupNameOpts(g.customName)}</select>
           <div style="display:inline-flex;flex-direction:column;gap:3px;margin-left:8px;vertical-align:middle">
             <div style="display:flex;align-items:center;gap:3px">
               <span style="font-size:10px;color:#8ab4d4;width:38px">PJ</span>
@@ -951,6 +966,7 @@ function redraw() {
   renderEquipment();
   renderProfiles();
   renderAircraft();
+  renderGroupNames();
   renderManifest();
   updateSummary();
   saveDB();
@@ -967,6 +983,7 @@ function saveDB() {
       equipment: db.equipment,
       profiles: db.profiles,
       aircraft: db.aircraft,
+      groupNames: db.groupNames,
       mffGroups: db.mffGroups,
       tandemGroups: db.tandemGroups,
       mode: db.mode
@@ -988,6 +1005,7 @@ function loadDB() {
     if (saved.equipment)   db.equipment   = saved.equipment;
     if (saved.profiles)    db.profiles    = saved.profiles;
     if (saved.aircraft)    db.aircraft    = saved.aircraft;
+    if (saved.groupNames)  db.groupNames  = saved.groupNames;
     if (saved.mode)        db.mode        = saved.mode;
     // Handle both old (single groups) and new (split) storage
     if (saved.mffGroups)    db.mffGroups    = saved.mffGroups;
@@ -1256,6 +1274,66 @@ function dragEnd(e) {
   e.currentTarget.classList.remove('dragging');
   document.querySelectorAll('.grp.drag-over').forEach(el => el.classList.remove('drag-over'));
   dragSrcIdx = null;
+}
+
+// ── GROUP NAMES ──────────────────────────────────────────
+function addGroupName() {
+  const name = document.getElementById('gnn').value.trim();
+  if (!name) return document.getElementById('gnn').focus();
+  db.groupNames.push({ name });
+  document.getElementById('gnn').value = '';
+  document.getElementById('gnn').focus();
+  redraw();
+}
+function removeGroupName(i) {
+  db.groupNames.splice(i, 1);
+  redraw();
+}
+function editGroupName(i) {
+  const a = db.groupNames[i];
+  const tagEl = document.getElementById('gn-tag-' + i);
+  if (!tagEl) return;
+  tagEl.innerHTML = `
+    <input id="egnn-${i}" value="${a.name||''}" placeholder="Group name" style="width:220px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <span class="x" style="color:#1b2b3c" onclick="saveGroupName(${i})" title="Save">&#10003;</span>
+    <span class="x" onclick="redraw()" title="Cancel">&#x2715;</span>`;
+  document.getElementById('egnn-' + i).focus();
+}
+function saveGroupName(i) {
+  const name = document.getElementById('egnn-' + i).value.trim();
+  if (!name) return alert('Name required');
+  db.groupNames[i] = { name };
+  redraw();
+}
+function clearGroupNames() {
+  if (!confirm('Clear all groups? This cannot be undone.')) return;
+  db.groupNames = [];
+  redraw();
+}
+function renderGroupNames() {
+  const el = document.getElementById('groupname-list');
+  if (!el) return;
+  if (!db.groupNames || !db.groupNames.length) {
+    el.innerHTML = '<span class="none-lbl">None added</span>';
+    return;
+  }
+  el.innerHTML = db.groupNames.map((a, i) => `
+    <span class="tag" id="gn-tag-${i}">
+      <span class="tag-name">${a.name}</span>
+      <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editGroupName(${i})" title="Edit">&#9998;</span>
+      <span class="x" onclick="removeGroupName(${i})">&#x2715;</span>
+    </span>`).join('');
+}
+function mkGroupNameOpts(sel) {
+  let opts = '<option value=""></option>';
+  if (db.groupNames && db.groupNames.length) {
+    opts += db.groupNames.map(a => `<option value="${a.name}"${a.name === sel ? ' selected' : ''}>${a.name}</option>`).join('');
+  }
+  return opts;
+}
+function setGrpName(gi, val) {
+  db.groups[gi].customName = val;
+  redraw();
 }
 
 // ── AIRCRAFT ──────────────────────────────────────────
