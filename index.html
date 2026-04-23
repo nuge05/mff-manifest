@@ -152,7 +152,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   tfoot tr{background:#fff !important}
   tfoot tr td{background:#fff !important;color:#000 !important;font-size:10px !important;padding:5px 4px !important;font-weight:bold !important;border-top:3px double #000;letter-spacing:0;text-transform:uppercase;white-space:nowrap !important;overflow:visible !important}
   tfoot tr td *{color:#000 !important}
-  tfoot tr td:last-child{text-align:right !important;padding-right:8px !important;font-size:10px !important}
+  tfoot tr td{text-align:left !important;padding:6px 8px !important;font-size:10px !important}
 
   /* Notes box */
   .notes-box{border-top:1.5px solid #1b2b3c;padding:4px 6px;background:#fff;min-height:55px}
@@ -927,8 +927,7 @@ function renderManifest() {
         </tr>
         <tfoot>
           <tr>
-            <td style="font-weight:bold;padding:5px 6px" colspan="${db.mode === 'TANDEM' ? 2 : 1}">Jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)} &nbsp;·&nbsp; Canopies: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0),0)}</td>
-            <td colspan="${db.mode === 'TANDEM' ? 2 : 3}" style="text-align:right;padding:5px 12px 5px 6px;white-space:nowrap;font-weight:bold">${tot} lbs</td>
+            <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="${db.mode === 'TANDEM' ? 4 : 4}">Jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)} &nbsp;·&nbsp; Canopies: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0),0)} &nbsp;·&nbsp; Weight: ${tot} lbs</td>
           </tr>
         </tfoot>
       </table>
