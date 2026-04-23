@@ -1062,7 +1062,10 @@ function printManifest() {
 function saveManifest() {
   const date = document.getElementById('manifest-date').value;
   if (!date) return alert('Please set a date before saving.');
-  const key = 'mff_manifest_' + date + '_' + db.mode;
+  const name = prompt('Name this manifest (e.g. Day 1 Lift 1, HAHO Evening):', 'Lift 1');
+  if (name === null) return;
+  const cleanName = name.trim() || 'Untitled';
+  const key = 'mff_manifest_' + date + '_' + db.mode + '_' + cleanName.replace(/[^a-zA-Z0-9]/g,'_');
   // Embed computed weights in each slot so preview can show totals without needing rosters
   const groupsWithWt = JSON.parse(JSON.stringify(db.groups));
   groupsWithWt.forEach(g => {
@@ -1070,6 +1073,7 @@ function saveManifest() {
   });
   const snapshot = {
     date,
+    name:        cleanName,
     mode:        db.mode,
     students:    JSON.parse(JSON.stringify(db.students)),
     instructors: JSON.parse(JSON.stringify(db.instructors)),
@@ -1080,9 +1084,9 @@ function saveManifest() {
     groups:      groupsWithWt
   };
   const existing = localStorage.getItem(key);
-  if (existing && !confirm('A manifest for ' + formatDate(date) + ' (' + db.mode + ') already exists. Overwrite it?')) return;
+  if (existing && !confirm('A manifest named "' + cleanName + '" for ' + formatDate(date) + ' (' + db.mode + ') already exists. Overwrite it?')) return;
   localStorage.setItem(key, JSON.stringify(snapshot));
-  alert('Manifest saved for ' + formatDate(date) + ' (' + db.mode + ')');
+  alert('Manifest saved: "' + cleanName + '" for ' + formatDate(date) + ' (' + db.mode + ')');
   renderArchive();
 }
 
@@ -1131,7 +1135,7 @@ function renderArchive() {
     const jmp = (snap.groups || []).reduce((a,g) => a + (g.slots||[]).reduce((b,sl) => b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0), 0);
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee">
       <div>
-        <span style="font-weight:bold;font-size:13px">${d}</span>
+        ${snap.name ? `<span style="font-weight:bold;font-size:13px">${snap.name}</span><span style="font-size:12px;color:#555;margin-left:8px">${d}</span>` : `<span style="font-weight:bold;font-size:13px">${d}</span>`}
         <span style="font-size:10px;background:#1b2b3c;color:#fff;padding:1px 6px;border-radius:3px;margin-left:6px">${snap.mode || 'MFF'}</span>
         <span style="font-size:11px;color:#888;margin-left:8px">${grps} group${grps!==1?'s':''} · ${jmp} jumpers</span>
       </div>
@@ -1709,4 +1713,3 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
-
