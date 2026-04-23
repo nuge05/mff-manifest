@@ -156,7 +156,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
   /* Notes box */
   .notes-box{border-top:1.5px solid #1b2b3c;padding:4px 6px;background:#fff;min-height:55px}
-  .notes-box > div{min-height:50px;border-bottom:1px solid #ccc}
+  .notes-box textarea{width:100% !important;min-height:50px !important;border:none !important;background:transparent !important;resize:none !important;font-family:Arial,sans-serif !important;font-size:10px !important;color:#000 !important;padding:2px !important;overflow:visible !important;white-space:pre-wrap !important}
 
 
 
@@ -935,8 +935,8 @@ function renderManifest() {
         </tfoot>
       </table>
       </div>
-      <div class="notes-box" style="border-top:1px solid #c5cdd8;padding:8px 10px;background:#fafbfd;min-height:60px">
-        <div style="min-height:50px"></div>
+      <div class="notes-box" style="border-top:1px solid #c5cdd8;padding:6px 8px;background:#fafbfd">
+        <textarea oninput="setGrpNotes(${gi},this.value)" placeholder="Notes / remarks..." style="width:100%;min-height:50px;border:none;background:transparent;resize:vertical;font-family:Arial,sans-serif;font-size:12px;color:#1b2b3c;outline:none;padding:4px">${g.notes || ''}</textarea>
       </div>
     </div>`;
   }).join('');
@@ -1459,6 +1459,11 @@ function mkProfileOpts(sel) {
   }
   return opts;
 }
+function setGrpNotes(gi, val) {
+  db.groups[gi].notes = val;
+  saveDB();
+}
+
 function setGrpProfile(gi, val) {
   db.groups[gi].profile = val;
   renderManifest();
@@ -1704,3 +1709,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
