@@ -108,6 +108,9 @@ select:focus{outline:none;border-color:#1b2b3c}
   body{background:#fff;margin:0;font-family:Arial,sans-serif;font-size:10px;color:#111}
   .hdr,.tab-bar,.summary,.hdr-btns,.grp-hd-btns,.manifest-toolbar,.add-row,.eq-add-row,
   #tab-roster,#tab-equipment,#tab-profiles,#tab-aircraft,#tab-groups,.drag-handle{display:none!important}
+  /* Hide the AL checkbox label during print; keep only the badge */
+  tbody td label{display:none !important}
+  .al-badge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;background:#c0392b !important;color:#fff !important;font-size:9px !important;font-weight:bold !important;padding:1px 4px !important;border-radius:2px !important;margin-left:3px !important}
   #tab-manifest{display:block!important;padding:0}
   #grid{display:none!important}
 
@@ -872,10 +875,13 @@ function renderManifest() {
 
   grid.innerHTML = db.groups.map((g, gi) => {
     const rows = g.slots.map((sl, si) => {
-      // Night mode: checkbox to mark Instructor or UI slot as Airland (no canopy)
-      const nightInstCB = db.night && sl.inst ? `<input type="checkbox" title="Airland" ${sl.instAL?'checked':''} onchange="setF(${gi},${si},'instAL',this.checked)" style="margin-left:5px;vertical-align:middle"> AL` : '';
-      const nightUiCB   = db.night && sl.ui   ? `<input type="checkbox" title="Airland" ${sl.uiAL?'checked':''}   onchange="setF(${gi},${si},'uiAL',this.checked)"   style="margin-left:5px;vertical-align:middle"> AL` : '';
-      const nightTmCB   = db.night && sl.tm   ? `<input type="checkbox" title="Airland" ${sl.tmAL?'checked':''}   onchange="setF(${gi},${si},'tmAL',this.checked)"   style="margin-left:5px;vertical-align:middle"> AL` : '';
+      // Night mode: AL checkbox + visible red badge when checked
+      const alBadge = checked => checked
+        ? '<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px">AL</span>'
+        : '';
+      const nightInstCB = db.night && sl.inst ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.instAL?'checked':''} onchange="setF(${gi},${si},'instAL',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge(sl.instAL)}` : '';
+      const nightUiCB   = db.night && sl.ui   ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.uiAL?'checked':''}   onchange="setF(${gi},${si},'uiAL',this.checked)"   style="margin:0;cursor:pointer">AL</label>${alBadge(sl.uiAL)}` : '';
+      const nightTmCB   = db.night && sl.tm   ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.tmAL?'checked':''}   onchange="setF(${gi},${si},'tmAL',this.checked)"   style="margin:0;cursor:pointer">AL</label>${alBadge(sl.tmAL)}` : '';
       if (db.mode === 'TANDEM') {
         return `<tr>
           <td><select onchange="setF(${gi},${si},'tm',this.value)">${mkOpts(db.instructors, sl.tm, gi, 'tm')}</select>${nightTmCB}</td>
