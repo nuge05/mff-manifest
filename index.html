@@ -863,19 +863,23 @@ function renderManifest() {
 
   grid.innerHTML = db.groups.map((g, gi) => {
     const rows = g.slots.map((sl, si) => {
+      // Night mode: checkbox to mark Instructor or UI slot as Airland (no canopy)
+      const nightInstCB = db.night && sl.inst ? `<input type="checkbox" title="Airland" ${sl.instAL?'checked':''} onchange="setF(${gi},${si},'instAL',this.checked)" style="margin-left:5px;vertical-align:middle"> AL` : '';
+      const nightUiCB   = db.night && sl.ui   ? `<input type="checkbox" title="Airland" ${sl.uiAL?'checked':''}   onchange="setF(${gi},${si},'uiAL',this.checked)"   style="margin-left:5px;vertical-align:middle"> AL` : '';
+      const nightTmCB   = db.night && sl.tm   ? `<input type="checkbox" title="Airland" ${sl.tmAL?'checked':''}   onchange="setF(${gi},${si},'tmAL',this.checked)"   style="margin-left:5px;vertical-align:middle"> AL` : '';
       if (db.mode === 'TANDEM') {
         return `<tr>
-          <td><select onchange="setF(${gi},${si},'tm',this.value)">${mkOpts(db.instructors, sl.tm, gi, 'tm')}</select></td>
+          <td><select onchange="setF(${gi},${si},'tm',this.value)">${mkOpts(db.instructors, sl.tm, gi, 'tm')}</select>${nightTmCB}</td>
           <td><select onchange="setF(${gi},${si},'pass',this.value)">${mkOpts(db.students, sl.pass, gi, 'pass')}</select></td>
-          <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select></td>
-          <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select></td>
+          <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select>${nightInstCB}</td>
+          <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select>${nightUiCB}</td>
           <td><button class="sm danger" onclick="removeSlot(${gi},${si})">✕</button></td>
         </tr>`;
       }
       return `<tr>
         <td><select onchange="setF(${gi},${si},'stu',this.value)">${mkOpts(db.students, sl.stu, gi, 'stu')}</select></td>
-        <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select></td>
-        <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select></td>
+        <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select>${nightInstCB}</td>
+        <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select>${nightUiCB}</td>
         <td><button class="sm danger" onclick="removeSlot(${gi},${si})">✕</button></td>
       </tr>`;
     }).join('');
@@ -931,7 +935,17 @@ function renderManifest() {
         </tr>
         <tfoot>
           <tr>
-            <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="${db.mode === 'TANDEM' ? 4 : 4}">Jumpers: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0)} &nbsp;·&nbsp; Canopies: ${g.slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0),0)} &nbsp;·&nbsp; Weight: ${tot} lbs</td>
+            <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="4">${(()=>{
+              const slots = g.slots;
+              const paxAll = slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0);
+              const airland = db.night ? slots.reduce((b,sl)=>b+(sl.instAL?1:0)+(sl.uiAL?1:0)+(sl.tmAL?1:0),0) : 0;
+              const jumpers = paxAll - airland;
+              const canopies = slots.reduce((b,sl)=>b+((sl.stu?1:0)+(sl.inst&&!sl.instAL?1:0)+(sl.ui&&!sl.uiAL?1:0)+(sl.tm&&!sl.tmAL?1:0)),0);
+              if (db.night) {
+                return `Pax: ${paxAll} &nbsp;·&nbsp; Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Airland: ${airland} &nbsp;·&nbsp; Weight: ${tot} lbs`;
+              }
+              return `Jumpers: ${paxAll} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Weight: ${tot} lbs`;
+            })()}</td>
           </tr>
         </tfoot>
       </table>
@@ -970,6 +984,9 @@ function redraw() {
   renderGroupNames();
   renderManifest();
   updateSummary();
+  // Keep Night checkbox UI in sync with db.night
+  const nightCb = document.getElementById('night-toggle');
+  if (nightCb) nightCb.checked = !!db.night;
   saveDB();
 }
 
@@ -985,6 +1002,7 @@ function saveDB() {
       profiles: db.profiles,
       aircraft: db.aircraft,
       groupNames: db.groupNames,
+      night: db.night,
       mffGroups: db.mffGroups,
       tandemGroups: db.tandemGroups,
       mode: db.mode
@@ -1007,6 +1025,7 @@ function loadDB() {
     if (saved.profiles)    db.profiles    = saved.profiles;
     if (saved.aircraft)    db.aircraft    = saved.aircraft;
     if (saved.groupNames)  db.groupNames  = saved.groupNames;
+    if (typeof saved.night === 'boolean') db.night = saved.night;
     if (saved.mode)        db.mode        = saved.mode;
     // Handle both old (single groups) and new (split) storage
     if (saved.mffGroups)    db.mffGroups    = saved.mffGroups;
