@@ -375,6 +375,10 @@ select:focus{outline:none;border-color:#1b2b3c}
       <button id="mode-mff" onclick="setMode('MFF')" style="background:#1b2b3c;color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:bold;border-radius:3px">MFF</button>
       <button id="mode-tandem" onclick="setMode('TANDEM')" style="background:transparent;color:#555;border:none;padding:4px 12px;font-size:12px;font-weight:bold;border-radius:3px">Tandem</button>
     </div>
+    <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:bold;color:#1b2b3c;margin-right:8px;user-select:none;cursor:pointer">
+      <input type="checkbox" id="night-toggle" onchange="toggleNight(this.checked)" style="margin:0;cursor:pointer">
+      &#127769; Night
+    </label>
     <button class="add-grp" onclick="addGroup()">+ Add group</button>
     <span style="font-size:12px;color:#888">Groups A – H max</span>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
@@ -405,7 +409,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
-const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], groupNames:[], mffGroups:[], tandemGroups:[], mode:'MFF',
+const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], groupNames:[], mffGroups:[], tandemGroups:[], mode:'MFF', night:false,
   get groups() { return this.mode === 'TANDEM' ? this.tandemGroups : this.mffGroups; },
   set groups(v) { if (this.mode === 'TANDEM') this.tandemGroups = v; else this.mffGroups = v; }
 };
@@ -833,6 +837,11 @@ function setGrpLabel(gi, field, val) {
   db.groups[gi][field] = val;
   renderManifest();
   updateSummary();
+}
+
+function toggleNight(on) {
+  db.night = !!on;
+  redraw();
 }
 
 function setMode(mode) {
