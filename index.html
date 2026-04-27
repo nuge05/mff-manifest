@@ -654,7 +654,7 @@ function moveGroupTo(gi, newIdxStr) {
 
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
-  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', pj: '', aj: '' });
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', pj: '', aj: '', colTypes: ['stu','inst','ui'] });
   redraw();
 }
 
@@ -674,7 +674,10 @@ function slotWt(sl) {
   const uiWt = pWt(sl.ui, db.instructors) || pWt(sl.ui, db.straps) || pWt(sl.ui, db.flight1) || pWt(sl.ui, db.ui) || pWt(sl.ui, db.equipment);
   const instWt = pWt(sl.inst, db.instructors) || pWt(sl.inst, db.flight1) || pWt(sl.inst, db.ui);
   const tmWt = pWt(sl.tm, db.instructors) || pWt(sl.tm, db.flight1) || pWt(sl.tm, db.ui);
-  return pWt(sl.stu, db.students) + instWt + uiWt + tmWt + pWt(sl.pass, db.students);
+  // New colN fields (when set) — search all rosters
+  const allWt = (name) => name ? (pWt(name, db.students) || pWt(name, db.instructors) || pWt(name, db.straps) || pWt(name, db.flight1) || pWt(name, db.ui) || 0) : 0;
+  const colSum = allWt(sl.col0) + allWt(sl.col1) + allWt(sl.col2);
+  return pWt(sl.stu, db.students) + instWt + uiWt + tmWt + pWt(sl.pass, db.students) + colSum;
 }
 function eqWt(label) {
   if (!label) return 0;
@@ -753,6 +756,70 @@ function shortStuLabel(p) {
   }
   return last;
 }
+function mkColTypeOpts(sel) {
+  const types = [
+    { val: 'stu',    label: 'Student' },
+    { val: 'inst',   label: 'Instructor' },
+    { val: 'ui',     label: 'UI/VID/Strap' },
+    { val: 'tm',     label: 'TM' },
+    { val: 'pass',   label: 'Pass' },
+    { val: 'jumper', label: 'Jumper' }
+  ];
+  return types.map(t => `<option value="${t.val}"${t.val === sel ? ' selected' : ''}>${t.label}</option>`).join('');
+}
+
+function setColType(gi, ci, type) {
+  const g = db.groups[gi];
+  if (!g.colTypes) g.colTypes = ['stu','inst','ui'];
+  g.colTypes[ci] = type;
+  // Clear any existing values in that column since the roster pool changed
+  g.slots.forEach(sl => { sl['col' + ci] = ''; sl['col' + ci + 'AL'] = false; });
+  redraw();
+}
+
+function mkColOpts(type, sel, gi, fieldKey) {
+  // Build options based on column type
+  // Track names already used in this group across all 3 columns + tm/pass/inst/ui legacy
+  const used = colUsedInGroup(gi, fieldKey);
+  const opt = (name, label) => `<option value="${name}"${name === sel ? ' selected' : ''}>${label}</option>`;
+  const mkForList = (list, getLabel) =>
+    list.filter(p => p.name === sel || !used.has(p.name))
+        .map(p => opt(p.name, getLabel(p))).join('');
+  let opts = '<option value=""></option>';
+  if (type === 'stu') {
+    opts += mkForList(db.students, p => `${p.rosterNum || (db.students.indexOf(p)+1)}. ${shortStuLabel(p)}`);
+  } else if (type === 'inst') {
+    if (db.instructors.length) opts += '<optgroup label="— Instructors —">' + mkForList(db.instructors, p => shortLabel(p, db.instructors)) + '</optgroup>';
+    if (db.flight1 && db.flight1.length) opts += '<optgroup label="— Flight-1 —">' + mkForList(db.flight1, p => shortLabel(p, db.flight1)) + '</optgroup>';
+    if (db.ui && db.ui.length) opts += '<optgroup label="— UI —">' + mkForList(db.ui, p => shortLabel(p, db.ui)) + '</optgroup>';
+  } else if (type === 'ui') {
+    if (db.instructors.length) opts += '<optgroup label="— Instructors —">' + mkForList(db.instructors, p => shortLabel(p, db.instructors)) + '</optgroup>';
+    if (db.straps.length) opts += '<optgroup label="— Straps —">' + mkForList(db.straps, s => shortLabel(s, db.straps)) + '</optgroup>';
+    if (db.flight1 && db.flight1.length) opts += '<optgroup label="— Flight-1 —">' + mkForList(db.flight1, p => shortLabel(p, db.flight1)) + '</optgroup>';
+    if (db.ui && db.ui.length) opts += '<optgroup label="— UI —">' + mkForList(db.ui, p => shortLabel(p, db.ui)) + '</optgroup>';
+  } else if (type === 'jumper' || type === 'tm' || type === 'pass') {
+    // All rosters combined for Jumper, TM, and Pass
+    if (db.students.length) opts += '<optgroup label="— Students —">' + mkForList(db.students, p => `${p.rosterNum || (db.students.indexOf(p)+1)}. ${shortStuLabel(p)}`) + '</optgroup>';
+    if (db.instructors.length) opts += '<optgroup label="— Instructors —">' + mkForList(db.instructors, p => shortLabel(p, db.instructors)) + '</optgroup>';
+    if (db.straps.length) opts += '<optgroup label="— Straps —">' + mkForList(db.straps, s => shortLabel(s, db.straps)) + '</optgroup>';
+    if (db.flight1 && db.flight1.length) opts += '<optgroup label="— Flight-1 —">' + mkForList(db.flight1, p => shortLabel(p, db.flight1)) + '</optgroup>';
+    if (db.ui && db.ui.length) opts += '<optgroup label="— UI —">' + mkForList(db.ui, p => shortLabel(p, db.ui)) + '</optgroup>';
+  }
+  return opts;
+}
+
+function colUsedInGroup(gi, excludeField) {
+  const g = db.groups[gi];
+  const used = new Set();
+  g.slots.forEach(sl => {
+    ['stu','inst','ui','tm','pass','col0','col1','col2'].forEach(f => {
+      if (f === excludeField) return;
+      if (sl[f]) used.add(sl[f]);
+    });
+  });
+  return used;
+}
+
 function mkOpts(list, sel, gi, field) {
   const used = gi !== undefined ? usedInGroup(gi, field) : new Set();
   const isStudent = list === db.students;
@@ -882,19 +949,26 @@ function renderManifest() {
       const nightInstCB = db.night && sl.inst ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.instAL?'checked':''} onchange="setF(${gi},${si},'instAL',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge(sl.instAL)}` : '';
       const nightUiCB   = db.night && sl.ui   ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.uiAL?'checked':''}   onchange="setF(${gi},${si},'uiAL',this.checked)"   style="margin:0;cursor:pointer">AL</label>${alBadge(sl.uiAL)}` : '';
       const nightTmCB   = db.night && sl.tm   ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.tmAL?'checked':''}   onchange="setF(${gi},${si},'tmAL',this.checked)"   style="margin:0;cursor:pointer">AL</label>${alBadge(sl.tmAL)}` : '';
-      if (db.mode === 'TANDEM') {
-        return `<tr>
-          <td><select onchange="setF(${gi},${si},'tm',this.value)">${mkOpts(db.instructors, sl.tm, gi, 'tm')}</select>${nightTmCB}</td>
-          <td><select onchange="setF(${gi},${si},'pass',this.value)">${mkOpts(db.students, sl.pass, gi, 'pass')}</select></td>
-          <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select>${nightInstCB}</td>
-          <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select>${nightUiCB}</td>
-          <td><button class="sm danger" onclick="removeSlot(${gi},${si})">✕</button></td>
-        </tr>`;
-      }
+      const tandemMode = db.mode === 'TANDEM';
+      const colTypes = g.colTypes || (tandemMode ? ['tm','pass','inst','ui'] : ['stu','inst','ui']);
+      const renderCol = (ci) => {
+        const t = colTypes[ci];
+        const fieldKey = 'col' + ci;
+        const val = sl[fieldKey] || '';
+        const opts = mkColOpts(t, val, gi, fieldKey);
+        let extraCB = '';
+        if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper')) {
+          const alKey = fieldKey + 'AL';
+          const alBadge2 = sl[alKey]
+            ? '<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px">AL</span>'
+            : '';
+          extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
+        }
+        return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${extraCB}</td>`;
+      };
+      const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
       return `<tr>
-        <td><select onchange="setF(${gi},${si},'stu',this.value)">${mkOpts(db.students, sl.stu, gi, 'stu')}</select></td>
-        <td><select onchange="setF(${gi},${si},'inst',this.value)">${mkOpts(db.instructors, sl.inst, gi, 'inst')}</select>${nightInstCB}</td>
-        <td><select onchange="setF(${gi},${si},'ui',this.value)">${mkStrapOpts(sl.ui, gi)}</select>${nightUiCB}</td>
+        ${colsHTML}
         <td><button class="sm danger" onclick="removeSlot(${gi},${si})">✕</button></td>
       </tr>`;
     }).join('');
@@ -938,7 +1012,12 @@ function renderManifest() {
             : '<col style="width:30%"><col style="width:32%"><col style="width:34%"><col style="width:4%">'}
         </colgroup>
         <thead><tr>
-          ${db.mode === 'TANDEM' ? '<th>TM</th><th>Pass</th><th>Instructor</th><th>Straps</th>' : '<th>Student</th><th>Instructor</th><th>UI/VID/Strap</th>'}
+          ${(()=>{
+            const defaults = db.mode === 'TANDEM' ? ['tm','pass','inst','ui'] : ['stu','inst','ui'];
+            const types = g.colTypes && g.colTypes.length === defaults.length ? g.colTypes : defaults;
+            if (!g.colTypes || g.colTypes.length !== defaults.length) g.colTypes = defaults;
+            return types.map((t, ci) => `<th><select onchange="setColType(${gi},${ci},this.value)" style="font-weight:bold;font-size:11px;background:transparent;border:1px solid transparent;cursor:pointer;color:#1b2b3c;width:100%">${mkColTypeOpts(t)}</select></th>`).join('');
+          })()}
           <th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -952,10 +1031,18 @@ function renderManifest() {
           <tr>
             <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="4">${(()=>{
               const slots = g.slots;
-              const paxAll = slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0),0);
-              const airland = db.night ? slots.reduce((b,sl)=>b+(sl.instAL?1:0)+(sl.uiAL?1:0)+(sl.tmAL?1:0),0) : 0;
+              const paxAll = slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0)+(sl.col0?1:0)+(sl.col1?1:0)+(sl.col2?1:0),0);
+              const airland = db.night ? slots.reduce((b,sl)=>b+(sl.instAL?1:0)+(sl.uiAL?1:0)+(sl.tmAL?1:0)+(sl.col0AL?1:0)+(sl.col1AL?1:0)+(sl.col2AL?1:0),0) : 0;
               const jumpers = paxAll - airland;
-              const canopies = slots.reduce((b,sl)=>b+((sl.stu?1:0)+(sl.inst&&!sl.instAL?1:0)+(sl.ui&&!sl.uiAL?1:0)+(sl.tm&&!sl.tmAL?1:0)),0);
+              const canopies = slots.reduce((b,sl)=>b+(
+                (sl.stu?1:0) +
+                (sl.inst&&!sl.instAL?1:0) +
+                (sl.ui&&!sl.uiAL?1:0) +
+                (sl.tm&&!sl.tmAL?1:0) +
+                (sl.col0&&!sl.col0AL?1:0) +
+                (sl.col1&&!sl.col1AL?1:0) +
+                (sl.col2&&!sl.col2AL?1:0)
+              ),0);
               if (db.night) {
                 return `Pax: ${paxAll} &nbsp;·&nbsp; Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Airland: ${airland} &nbsp;·&nbsp; Wt: ${tot} lbs`;
               }
@@ -981,9 +1068,9 @@ function updateSummary() {
     jumpers += jumperCnt(g);
   });
   document.getElementById('s-grps').textContent    = db.groups.length;
-  const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0) + (sl.pass?1:0), 0), 0);
+  const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0) + (sl.pass?1:0) + (sl.col0?1:0) + (sl.col1?1:0) + (sl.col2?1:0), 0), 0);
   // Canopies: MFF — one per jumper; Tandem — TM counts for 1 (shared with pass), inst=1, ui=1 (pass NOT counted)
-  const totalCanopies = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0), 0), 0);
+  const totalCanopies = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst&&!sl.instAL?1:0) + (sl.ui&&!sl.uiAL?1:0) + (sl.tm&&!sl.tmAL?1:0) + (sl.col0&&!sl.col0AL?1:0) + (sl.col1&&!sl.col1AL?1:0) + (sl.col2&&!sl.col2AL?1:0), 0), 0);
   document.getElementById('s-jumpers').textContent = totalJumpers;
   document.getElementById('s-canopies').textContent = totalCanopies;
   document.getElementById('s-mj').textContent      = mj;
