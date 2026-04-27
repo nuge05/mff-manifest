@@ -689,11 +689,25 @@ function grpTot(g)  {
   const eqSum = mjCnt(g) * eqWt(g.mjLabel) + nsCnt(g) * eqWt(g.nsLabel) + uiCnt(g) * eqWt(g.uiLabel);
   return slotSum + eqSum;
 }
-function mjCnt(g)   { return g.slots.filter(sl => sl.stu).length; }
-function nsCnt(g)   { return g.slots.filter(sl => sl.inst).length; }
-function uiCnt(g)   { return g.slots.filter(sl => sl.ui).length; }
-// total jumpers = any slot that has at least a student OR instructor assigned
-function jumperCnt(g) { return g.slots.filter(sl => sl.stu || sl.inst).length; }
+function mjCnt(g) {
+  // Count slots where any column of type 'stu' is filled
+  const types = g.colTypes || [];
+  return g.slots.filter(sl => types.some((t, ci) => t === 'stu' && sl['col' + ci])).length;
+}
+function nsCnt(g) {
+  // Count slots where any column of type 'inst' or 'tm' is filled
+  const types = g.colTypes || [];
+  return g.slots.filter(sl => types.some((t, ci) => (t === 'inst' || t === 'tm') && sl['col' + ci])).length;
+}
+function uiCnt(g) {
+  // Count slots where any column of type 'ui' or 'pass' or 'jumper' is filled
+  const types = g.colTypes || [];
+  return g.slots.filter(sl => types.some((t, ci) => (t === 'ui' || t === 'pass' || t === 'jumper') && sl['col' + ci])).length;
+}
+function jumperCnt(g) {
+  // Total slots with any filled column
+  return g.slots.filter(sl => sl.col0 || sl.col1 || sl.col2 || sl.col3).length;
+}
 
 function mkStrapOpts(sel, gi) {
   const used = gi !== undefined ? usedInGroup(gi, 'ui') : new Set();
