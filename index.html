@@ -930,6 +930,25 @@ function setMode(mode) {
 }
 
 function renderManifest() {
+  // Migrate legacy slot fields to colN fields when needed
+  db.groups.forEach(g => {
+    const tandem = db.mode === 'TANDEM';
+    const defaults = tandem ? ['tm','pass','inst','ui'] : ['stu','inst','ui'];
+    if (!g.colTypes || g.colTypes.length !== defaults.length) g.colTypes = defaults.slice();
+    g.slots.forEach(sl => {
+      defaults.forEach((legacyField, ci) => {
+        const colKey = 'col' + ci;
+        if (!sl[colKey] && sl[legacyField]) {
+          sl[colKey] = sl[legacyField];
+          if (sl[legacyField + 'AL']) sl[colKey + 'AL'] = sl[legacyField + 'AL'];
+        }
+      });
+      ['stu','inst','ui','tm','pass'].forEach(f => {
+        if (sl[f]) sl[f] = '';
+        if (sl[f + 'AL']) sl[f + 'AL'] = false;
+      });
+    });
+  });
   const grid = document.getElementById('grid');
   if (!db.groups.length) {
     grid.innerHTML = `<div class="empty-grid">No groups yet.<br>
