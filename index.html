@@ -690,22 +690,18 @@ function grpTot(g)  {
   return slotSum + eqSum;
 }
 function mjCnt(g) {
-  // Count slots where any column of type 'stu' is filled
-  const types = g.colTypes || [];
-  return g.slots.filter(sl => types.some((t, ci) => t === 'stu' && sl['col' + ci])).length;
+  // Count filled slots in column 0 (first column)
+  return g.slots.filter(sl => sl.col0).length;
 }
 function nsCnt(g) {
-  // Count slots where any column of type 'inst' or 'tm' is filled
-  const types = g.colTypes || [];
-  return g.slots.filter(sl => types.some((t, ci) => (t === 'inst' || t === 'tm') && sl['col' + ci])).length;
+  // Count filled slots in column 1 (second column)
+  return g.slots.filter(sl => sl.col1).length;
 }
 function uiCnt(g) {
-  // Count slots where any column of type 'ui' or 'pass' or 'jumper' is filled
-  const types = g.colTypes || [];
-  return g.slots.filter(sl => types.some((t, ci) => (t === 'ui' || t === 'pass' || t === 'jumper') && sl['col' + ci])).length;
+  // Count filled slots in column 2 (third column)
+  return g.slots.filter(sl => sl.col2).length;
 }
 function jumperCnt(g) {
-  // Total slots with any filled column
   return g.slots.filter(sl => sl.col0 || sl.col1 || sl.col2 || sl.col3).length;
 }
 
