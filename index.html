@@ -110,7 +110,9 @@ select:focus{outline:none;border-color:#1b2b3c}
   #tab-roster,#tab-equipment,#tab-profiles,#tab-aircraft,#tab-groups,.drag-handle{display:none!important}
   /* Hide the AL checkbox label during print; keep only the badge */
   tbody td label{display:none !important}
-  .al-badge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;background:#c0392b !important;color:#fff !important;font-size:9px !important;font-weight:bold !important;padding:1px 4px !important;border-radius:2px !important;margin-left:3px !important}
+  .al-badge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;background:#c0392b !important;color:#fff !important;font-size:9px !important;font-weight:bold !important;padding:1px 4px !important;border-radius:2px !important;margin-left:3px !important;display:inline-block !important}
+  /* Hide AL checkbox label in print but keep the badge */
+  tbody td label{display:none !important}
   #tab-manifest{display:block!important;padding:0}
   #grid{display:none!important}
 
@@ -990,7 +992,7 @@ function renderManifest() {
         if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm')) {
           const alKey = fieldKey + 'AL';
           const alBadge2 = sl[alKey]
-            ? `<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px">${val} AL</span>`
+            ? `<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px">AL</span>`
             : '';
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
