@@ -987,10 +987,10 @@ function renderManifest() {
         const val = sl[fieldKey] || '';
         const opts = mkColOpts(t, val, gi, fieldKey);
         let extraCB = '';
-        if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper')) {
+        if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm')) {
           const alKey = fieldKey + 'AL';
           const alBadge2 = sl[alKey]
-            ? '<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px">AL</span>'
+            ? `<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px">${val} AL</span>`
             : '';
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
