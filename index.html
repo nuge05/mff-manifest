@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1090,14 +1089,21 @@ function renderManifest() {
               const paxAll = slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0)+(sl.col0?1:0)+(sl.col1?1:0)+(sl.col2?1:0),0);
               const airland = db.night ? slots.reduce((b,sl)=>b+(sl.instAL?1:0)+(sl.uiAL?1:0)+(sl.tmAL?1:0)+(sl.col0AL?1:0)+(sl.col1AL?1:0)+(sl.col2AL?1:0),0) : 0;
               const jumpers = paxAll - airland;
+              const isPass = (sl, colKey) => {
+                // Pass if column type is 'pass' OR duty is set to 'pass'
+                const ci = parseInt(colKey.replace('col',''));
+                const colType = (g.colTypes || [])[ci];
+                const duty = sl[colKey + 'Duty'] || colType;
+                return duty === 'pass';
+              };
               const canopies = slots.reduce((b,sl)=>b+(
                 (sl.stu?1:0) +
                 (sl.inst&&!sl.instAL?1:0) +
                 (sl.ui&&!sl.uiAL?1:0) +
                 (sl.tm&&!sl.tmAL?1:0) +
-                (sl.col0&&!sl.col0AL?1:0) +
-                (sl.col1&&!sl.col1AL?1:0) +
-                (sl.col2&&!sl.col2AL?1:0)
+                (sl.col0&&!sl.col0AL&&!isPass(sl,'col0')?1:0) +
+                (sl.col1&&!sl.col1AL&&!isPass(sl,'col1')?1:0) +
+                (sl.col2&&!sl.col2AL&&!isPass(sl,'col2')?1:0)
               ),0);
               if (db.night) {
                 return `Pax: ${paxAll} &nbsp;·&nbsp; Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Airland: ${airland} &nbsp;·&nbsp; Wt: ${tot} lbs`;
@@ -1126,7 +1132,18 @@ function updateSummary() {
   document.getElementById('s-grps').textContent    = db.groups.length;
   const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0) + (sl.pass?1:0) + (sl.col0?1:0) + (sl.col1?1:0) + (sl.col2?1:0), 0), 0);
   // Canopies: MFF — one per jumper; Tandem — TM counts for 1 (shared with pass), inst=1, ui=1 (pass NOT counted)
-  const totalCanopies = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst&&!sl.instAL?1:0) + (sl.ui&&!sl.uiAL?1:0) + (sl.tm&&!sl.tmAL?1:0) + (sl.col0&&!sl.col0AL?1:0) + (sl.col1&&!sl.col1AL?1:0) + (sl.col2&&!sl.col2AL?1:0), 0), 0);
+  const totalCanopies = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => {
+    const isPassCol = (colKey) => {
+      const ci = parseInt(colKey.replace('col',''));
+      const colType = (g.colTypes || [])[ci];
+      const duty = sl[colKey + 'Duty'] || colType;
+      return duty === 'pass';
+    };
+    return b + (sl.stu?1:0) + (sl.inst&&!sl.instAL?1:0) + (sl.ui&&!sl.uiAL?1:0) + (sl.tm&&!sl.tmAL?1:0) +
+      (sl.col0&&!sl.col0AL&&!isPassCol('col0')?1:0) +
+      (sl.col1&&!sl.col1AL&&!isPassCol('col1')?1:0) +
+      (sl.col2&&!sl.col2AL&&!isPassCol('col2')?1:0);
+  }, 0), 0);
   document.getElementById('s-jumpers').textContent = totalJumpers;
   document.getElementById('s-canopies').textContent = totalCanopies;
   document.getElementById('s-mj').textContent      = mj;
