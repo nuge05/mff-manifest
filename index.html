@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -945,12 +946,13 @@ function setMode(mode) {
 }
 
 function renderManifest() {
-  // Migrate legacy slot fields to colN fields when needed
+  // Migrate legacy slot fields to colN fields — runs once per slot, then marks done
   db.groups.forEach(g => {
     const tandem = db.mode === 'TANDEM';
     const defaults = tandem ? ['tm','pass','inst','ui'] : ['stu','inst','ui'];
     if (!g.colTypes || g.colTypes.length !== defaults.length) g.colTypes = defaults.slice();
     g.slots.forEach(sl => {
+      if (sl._migrated) return; // already done
       defaults.forEach((legacyField, ci) => {
         const colKey = 'col' + ci;
         if (!sl[colKey] && sl[legacyField]) {
@@ -959,9 +961,10 @@ function renderManifest() {
         }
       });
       ['stu','inst','ui','tm','pass'].forEach(f => {
-        if (sl[f]) sl[f] = '';
-        if (sl[f + 'AL']) sl[f + 'AL'] = false;
+        sl[f] = '';
+        sl[f + 'AL'] = false;
       });
+      sl._migrated = true;
     });
   });
   const grid = document.getElementById('grid');
