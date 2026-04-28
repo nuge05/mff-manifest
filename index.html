@@ -803,12 +803,12 @@ function mkDutyBadge(gi, si, dutyKey, dutyVal) {
 
 function mkEqOverrideBadge(gi, si, eqKey, eqVal, groupDefault) {
   const items = (db.equipment || []);
-  // Build options: blank (use group default) + all equipment items
-  let opts = '<option value="" title="Use group default">' + (groupDefault || 'Default') + '</option>';
+  let opts = '<option value="">' + (groupDefault || 'Default') + '</option>';
   opts += items.map(function(e) {
     return '<option value="' + e.name + '"' + (e.name === eqVal ? ' selected' : '') + '>' + e.name + '</option>';
   }).join('');
-  return '<select onchange="setF(' + gi + ',' + si + ','' + eqKey + '',this.value)" title="Equipment override" style="font-size:9px;font-weight:bold;background:#253f5a;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:3px;max-width:70px">' + opts + '</select>';
+  const onch = 'setF(' + gi + ',' + si + ',"' + eqKey + '",this.value)';
+  return '<select onchange="' + onch + '" title="Equipment override" style="font-size:9px;font-weight:bold;background:#253f5a;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:3px;max-width:70px">' + opts + '</select>';
 }
 
 function mkColTypeOpts(sel) {
