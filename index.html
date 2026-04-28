@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -113,6 +114,8 @@ select:focus{outline:none;border-color:#1b2b3c}
   .al-badge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;background:#c0392b !important;color:#fff !important;font-size:9px !important;font-weight:bold !important;padding:1px 4px !important;border-radius:2px !important;margin-left:3px !important;display:inline-block !important}
   /* Hide AL checkbox label in print but keep the badge */
   tbody td label{display:none !important}
+  /* Duty badge in print — show as plain bold text */
+  tbody td select[title="Jump duty"]{appearance:none !important;-webkit-appearance:none !important;border:1px solid #000 !important;background:#fff !important;color:#000 !important;font-size:8px !important;font-weight:bold !important;padding:0 2px !important;width:auto !important}
   #tab-manifest{display:block!important;padding:0}
   #grid{display:none!important}
 
@@ -992,6 +995,13 @@ function renderManifest() {
         const fieldKey = 'col' + ci;
         const val = sl[fieldKey] || '';
         const opts = mkColOpts(t, val, gi, fieldKey, si);
+        // Duty badge: small dropdown defaulting to column type
+        const dutyKey = fieldKey + 'Duty';
+        const dutyVal = sl[dutyKey] || (val ? t : '');
+        const dutyLabels = {stu:'Student',inst:'Instructor',ui:'UI/VID/Strap',tm:'TM',pass:'Pass',ds:'DS',jumper:'Jumper'};
+        const dutyOpts = ['stu','inst','ui','tm','pass','ds','jumper']
+          .map(d => `<option value="${d}"${d===dutyVal?' selected':''}>${dutyLabels[d]}</option>`).join('');
+        const dutyBadge = val ? `<select onchange="setF(${gi},${si},'${dutyKey}',this.value)" title="Jump duty" style="font-size:9px;font-weight:bold;background:#1b2b3c;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:4px;max-width:75px">${dutyOpts}</select>` : '';
         let extraCB = '';
         if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm' || t === 'ds')) {
           const alKey = fieldKey + 'AL';
@@ -1000,7 +1010,7 @@ function renderManifest() {
             : '';
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
-        return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${extraCB}</td>`;
+        return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${dutyBadge}${extraCB}</td>`;
       };
       const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
       return `<tr>
@@ -1880,3 +1890,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
