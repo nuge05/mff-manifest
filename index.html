@@ -115,6 +115,8 @@ select:focus{outline:none;border-color:#1b2b3c}
   tbody td label{display:none !important}
   /* Duty badge in print — show as plain bold text */
   tbody td select[title="Jump duty"]{appearance:none !important;-webkit-appearance:none !important;border:1px solid #000 !important;background:#fff !important;color:#000 !important;font-size:8px !important;font-weight:bold !important;padding:0 2px !important;width:auto !important}
+  /* Equipment override badge in print */
+  tbody td select[title="Equipment override"]{appearance:none !important;-webkit-appearance:none !important;border:1px solid #000 !important;background:#fff !important;color:#000 !important;font-size:8px !important;font-weight:bold !important;padding:0 2px !important;width:auto !important}
   #tab-manifest{display:block!important;padding:0}
   #grid{display:none!important}
 
@@ -691,7 +693,26 @@ function eqWt(label) {
 }
 function grpTot(g)  {
   const slotSum = g.slots.reduce((a, sl) => a + slotWt(sl), 0);
-  const eqSum = mjCnt(g) * eqWt(g.mjLabel) + nsCnt(g) * eqWt(g.nsLabel) + uiCnt(g) * eqWt(g.uiLabel);
+  // Count equipment per slot — use individual override if set, else group default by duty
+  const types = g.colTypes || [];
+  let eqSum = 0;
+  g.slots.forEach(sl => {
+    ['col0','col1','col2','col3'].forEach((colKey, ci) => {
+      if (!sl[colKey]) return;
+      // Individual equipment override
+      const slotEq = sl[colKey + 'Eq'];
+      if (slotEq) {
+        eqSum += eqWt(slotEq);
+        return;
+      }
+      // Fall back to group default based on duty
+      const colType = types[ci] || '';
+      const duty = sl[colKey + 'Duty'] || colType;
+      if (duty === 'stu') eqSum += eqWt(g.mjLabel);
+      else if (duty === 'inst' || duty === 'tm' || duty === 'ds') eqSum += eqWt(g.nsLabel);
+      else if (duty === 'ui' || duty === 'pass' || duty === 'jumper') eqSum += eqWt(g.uiLabel);
+    });
+  });
   return slotSum + eqSum;
 }
 function mjCnt(g) {
@@ -778,6 +799,16 @@ function mkDutyBadge(gi, si, dutyKey, dutyVal) {
     return '<option value="' + d + '"' + (d === dutyVal ? ' selected' : '') + '>' + labels[d] + '</option>';
   }).join('');
   return '<select onchange="setF(' + gi + ',' + si + ',\'' + dutyKey + '\',this.value)" title="Jump duty" style="font-size:9px;font-weight:bold;background:#1b2b3c;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:4px;max-width:75px">' + opts + '</select>';
+}
+
+function mkEqOverrideBadge(gi, si, eqKey, eqVal, groupDefault) {
+  const items = (db.equipment || []);
+  // Build options: blank (use group default) + all equipment items
+  let opts = '<option value="" title="Use group default">' + (groupDefault || 'Default') + '</option>';
+  opts += items.map(function(e) {
+    return '<option value="' + e.name + '"' + (e.name === eqVal ? ' selected' : '') + '>' + e.name + '</option>';
+  }).join('');
+  return '<select onchange="setF(' + gi + ',' + si + ','' + eqKey + '',this.value)" title="Equipment override" style="font-size:9px;font-weight:bold;background:#253f5a;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:3px;max-width:70px">' + opts + '</select>';
 }
 
 function mkColTypeOpts(sel) {
@@ -1007,6 +1038,11 @@ function renderManifest() {
         const dutyKey = fieldKey + 'Duty';
         const dutyVal = sl[dutyKey] || (val ? t : '');
         const dutyBadge = val ? mkDutyBadge(gi, si, dutyKey, dutyVal) : '';
+        // Equipment override dropdown — defaults to group-level label for that column
+        const eqKey = fieldKey + 'Eq';
+        const groupEqDefault = ci === 0 ? g.mjLabel : (ci === 1 ? g.nsLabel : g.uiLabel);
+        const eqVal = sl[eqKey] || '';
+        const eqBadge = val ? mkEqOverrideBadge(gi, si, eqKey, eqVal, groupEqDefault) : '';
         let extraCB = '';
         if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm' || t === 'ds')) {
           const alKey = fieldKey + 'AL';
@@ -1015,7 +1051,7 @@ function renderManifest() {
             : '';
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
-        return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${dutyBadge}${extraCB}</td>`;
+        return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${dutyBadge}${eqBadge}${extraCB}</td>`;
       };
       const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
       return `<tr>
