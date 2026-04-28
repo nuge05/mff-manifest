@@ -776,6 +776,7 @@ function mkColTypeOpts(sel) {
     { val: 'ui',     label: 'UI/VID/Strap' },
     { val: 'tm',     label: 'TM' },
     { val: 'pass',   label: 'Pass' },
+    { val: 'ds',     label: 'DS' },
     { val: 'jumper', label: 'Jumper' }
   ];
   return types.map(t => `<option value="${t.val}"${t.val === sel ? ' selected' : ''}>${t.label}</option>`).join('');
@@ -810,7 +811,7 @@ function mkColOpts(type, sel, gi, fieldKey, si) {
     if (db.straps.length) opts += '<optgroup label="— Straps —">' + mkForList(db.straps, s => shortLabel(s, db.straps)) + '</optgroup>';
     if (db.flight1 && db.flight1.length) opts += '<optgroup label="— Flight-1 —">' + mkForList(db.flight1, p => shortLabel(p, db.flight1)) + '</optgroup>';
     if (db.ui && db.ui.length) opts += '<optgroup label="— UI —">' + mkForList(db.ui, p => shortLabel(p, db.ui)) + '</optgroup>';
-  } else if (type === 'jumper' || type === 'tm' || type === 'pass') {
+  } else if (type === 'jumper' || type === 'tm' || type === 'pass' || type === 'ds') {
     // All rosters combined for Jumper, TM, and Pass
     if (db.students.length) opts += '<optgroup label="— Students —">' + mkForList(db.students, p => `${p.rosterNum || (db.students.indexOf(p)+1)}. ${shortStuLabel(p)}`) + '</optgroup>';
     if (db.instructors.length) opts += '<optgroup label="— Instructors —">' + mkForList(db.instructors, p => shortLabel(p, db.instructors)) + '</optgroup>';
@@ -990,7 +991,7 @@ function renderManifest() {
         const val = sl[fieldKey] || '';
         const opts = mkColOpts(t, val, gi, fieldKey, si);
         let extraCB = '';
-        if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm')) {
+        if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm' || t === 'ds')) {
           const alKey = fieldKey + 'AL';
           const alBadge2 = sl[alKey]
             ? `<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px">AL</span>`
