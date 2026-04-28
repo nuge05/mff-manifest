@@ -790,10 +790,10 @@ function setColType(gi, ci, type) {
   redraw();
 }
 
-function mkColOpts(type, sel, gi, fieldKey) {
+function mkColOpts(type, sel, gi, fieldKey, si) {
   // Build options based on column type
   // Track names already used in this group across all 3 columns + tm/pass/inst/ui legacy
-  const used = colUsedInGroup(gi, fieldKey);
+  const used = colUsedInGroup(gi, fieldKey, si);
   const opt = (name, label) => `<option value="${name}"${name === sel ? ' selected' : ''}>${label}</option>`;
   const mkForList = (list, getLabel) =>
     list.filter(p => p.name === sel || !used.has(p.name))
@@ -821,12 +821,13 @@ function mkColOpts(type, sel, gi, fieldKey) {
   return opts;
 }
 
-function colUsedInGroup(gi, excludeField) {
+function colUsedInGroup(gi, excludeField, excludeSlotIdx) {
   const g = db.groups[gi];
   const used = new Set();
-  g.slots.forEach(sl => {
-    ['stu','inst','ui','tm','pass','col0','col1','col2'].forEach(f => {
-      if (f === excludeField) return;
+  g.slots.forEach((sl, si) => {
+    ['stu','inst','ui','tm','pass','col0','col1','col2','col3'].forEach(f => {
+      // Skip only the specific slot+field being edited
+      if (si === excludeSlotIdx && f === excludeField) return;
       if (sl[f]) used.add(sl[f]);
     });
   });
@@ -987,7 +988,7 @@ function renderManifest() {
         const t = colTypes[ci];
         const fieldKey = 'col' + ci;
         const val = sl[fieldKey] || '';
-        const opts = mkColOpts(t, val, gi, fieldKey);
+        const opts = mkColOpts(t, val, gi, fieldKey, si);
         let extraCB = '';
         if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm')) {
           const alKey = fieldKey + 'AL';
