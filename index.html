@@ -661,7 +661,7 @@ function moveGroupTo(gi, newIdxStr) {
 
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
-  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', pj: '', aj: '', colTypes: ['stu','inst','ui'] });
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','','','',''], pj: '', aj: '', colTypes: ['stu','inst','ui'] });
   redraw();
 }
 
@@ -686,6 +686,31 @@ function slotWt(sl) {
   const colSum = allWt(sl.col0) + allWt(sl.col1) + allWt(sl.col2);
   return pWt(sl.stu, db.students) + instWt + uiWt + tmWt + pWt(sl.pass, db.students) + colSum;
 }
+function eqCountInGroup(g, label) {
+  if (!label) return 0;
+  const types = g.colTypes || [];
+  let count = 0;
+  g.slots.forEach(sl => {
+    ['col0','col1','col2','col3'].forEach((colKey, ci) => {
+      if (!sl[colKey]) return;
+      // Check individual equipment override first
+      const slotEq = sl[colKey + 'Eq'];
+      if (slotEq) {
+        if (slotEq === label) count++;
+        return;
+      }
+      // Fall back to duty-based default equipment
+      const duty = sl[colKey + 'Duty'] || types[ci] || '';
+      let defaultEq = '';
+      if (duty === 'stu') defaultEq = g.eqBoxes ? (g.eqBoxes[0] || '') : (g.mjLabel || '');
+      else if (duty === 'inst' || duty === 'tm' || duty === 'ds') defaultEq = g.eqBoxes ? (g.eqBoxes[1] || '') : (g.nsLabel || '');
+      else if (duty === 'ui' || duty === 'pass' || duty === 'jumper') defaultEq = g.eqBoxes ? (g.eqBoxes[2] || '') : (g.uiLabel || '');
+      if (defaultEq === label) count++;
+    });
+  });
+  return count;
+}
+
 function eqWt(label) {
   if (!label) return 0;
   const item = (db.equipment || []).find(e => e.name === label);
@@ -708,9 +733,10 @@ function grpTot(g)  {
       // Fall back to group default based on duty
       const colType = types[ci] || '';
       const duty = sl[colKey + 'Duty'] || colType;
-      if (duty === 'stu') eqSum += eqWt(g.mjLabel);
-      else if (duty === 'inst' || duty === 'tm' || duty === 'ds') eqSum += eqWt(g.nsLabel);
-      else if (duty === 'ui' || duty === 'pass' || duty === 'jumper') eqSum += eqWt(g.uiLabel);
+      const boxes = g.eqBoxes || ['MJ','NS','','','',''];
+      if (duty === 'stu') eqSum += eqWt(boxes[0] || g.mjLabel);
+      else if (duty === 'inst' || duty === 'tm' || duty === 'ds') eqSum += eqWt(boxes[1] || g.nsLabel);
+      else if (duty === 'ui' || duty === 'pass' || duty === 'jumper') eqSum += eqWt(boxes[2] || g.uiLabel);
     });
   });
   return slotSum + eqSum;
@@ -807,8 +833,40 @@ function mkEqOverrideBadge(gi, si, eqKey, eqVal, groupDefault) {
   opts += items.map(function(e) {
     return '<option value="' + e.name + '"' + (e.name === eqVal ? ' selected' : '') + '>' + e.name + '</option>';
   }).join('');
-  const onch = 'setF(' + gi + ',' + si + ',"' + eqKey + '",this.value)';
-  return '<select onchange="' + onch + '" title="Equipment override" style="font-size:9px;font-weight:bold;background:#253f5a;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:3px;max-width:70px">' + opts + '</select>';
+  // Use single-quoted attribute and escape with data attributes to avoid quote conflicts
+  return '<select data-gi="' + gi + '" data-si="' + si + '" data-fld="' + eqKey + '" onchange="setSlotEq(this)" title="Equipment override" style="font-size:9px;font-weight:bold;background:#253f5a;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:3px;max-width:70px">' + opts + '</select>';
+}
+
+function setSlotEq(el) {
+  const gi = parseInt(el.dataset.gi);
+  const si = parseInt(el.dataset.si);
+  const fld = el.dataset.fld;
+  db.groups[gi].slots[si][fld] = el.value;
+  // Don't redraw — just save so we don't lose focus
+  saveDB();
+  // Update weight display only
+  updateSummary();
+  // Re-render just the tfoot of this group
+  const grpEls = document.querySelectorAll('.grp');
+  if (grpEls[gi]) {
+    const tfoot = grpEls[gi].querySelector('tfoot td');
+    if (tfoot) {
+      const g = db.groups[gi];
+      const tot = grpTot(g);
+      const slots = g.slots;
+      const paxAll = slots.reduce((b,sl)=>b+(sl.col0?1:0)+(sl.col1?1:0)+(sl.col2?1:0)+(sl.col3?1:0),0);
+      const airland = db.night ? slots.reduce((b,sl)=>b+(sl.col0AL?1:0)+(sl.col1AL?1:0)+(sl.col2AL?1:0)+(sl.col3AL?1:0),0) : 0;
+      const canopies = slots.reduce((b,sl)=>{
+        const isPass = (ck,ci) => { const d = sl[ck+'Duty'] || (g.colTypes||[])[ci]; return d==='pass'; };
+        return b+(sl.col0&&!sl.col0AL&&!isPass('col0',0)?1:0)+(sl.col1&&!sl.col1AL&&!isPass('col1',1)?1:0)+(sl.col2&&!sl.col2AL&&!isPass('col2',2)?1:0);
+      },0);
+      if (db.night) {
+        tfoot.innerHTML = 'Pax: ' + paxAll + ' &nbsp;&middot;&nbsp; Jumpers: ' + (paxAll-airland) + ' &nbsp;&middot;&nbsp; Canopies: ' + canopies + ' &nbsp;&middot;&nbsp; Airland: ' + airland + ' &nbsp;&middot;&nbsp; Wt: ' + tot + ' lbs';
+      } else {
+        tfoot.innerHTML = 'Jumpers: ' + paxAll + ' &nbsp;&middot;&nbsp; Canopies: ' + canopies + ' &nbsp;&middot;&nbsp; Wt: ' + tot + ' lbs';
+      }
+    }
+  }
 }
 
 function mkColTypeOpts(sel) {
@@ -960,6 +1018,13 @@ function mkEqLabelOpts(sel) {
     return `<option value="${e.name}"${e.name === sel ? ' selected' : ''}>${e.name}</option>`;
   }).join('');
 }
+function setGrpEqBox(gi, bi, val) {
+  const g = db.groups[gi];
+  if (!g.eqBoxes) g.eqBoxes = ['MJ','NS','','','',''];
+  g.eqBoxes[bi] = val;
+  redraw();
+}
+
 function setGrpLabel(gi, field, val) {
   db.groups[gi][field] = val;
   renderManifest();
@@ -1113,10 +1178,18 @@ function renderManifest() {
         </tr></thead>
         <tbody>${rows}</tbody>
         <tr class="counts-row">
-          <td><select class="cnt-sel" onchange="setGrpLabel(${gi},'mjLabel',this.value)">${mkEqLabelOpts(g.mjLabel)}</select> <span class="cnt-num">${mj}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpLabel(${gi},'nsLabel',this.value)">${mkEqLabelOpts(g.nsLabel)}</select> <span class="cnt-num">${ns}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpLabel(${gi},'uiLabel',this.value)">${mkEqLabelOpts(g.uiLabel)}</select> <span class="cnt-num">${uiCnt(g)}</span></td>
-          <td></td>
+          <td colspan="4" style="padding:4px 6px">
+            ${(()=>{
+              const eqBoxes = g.eqBoxes || ['MJ','NS','','','',''];
+              return eqBoxes.map((lbl, bi) => {
+                const cnt = lbl ? eqCountInGroup(g, lbl) : 0;
+                return '<span style="display:inline-flex;align-items:center;gap:2px;margin-right:6px">' +
+                  '<select class="cnt-sel" onchange="setGrpEqBox(' + gi + ',' + bi + ',this.value)">' + mkEqLabelOpts(lbl) + '</select>' +
+                  (lbl ? '<span class="cnt-num">' + cnt + '</span>' : '') +
+                  '</span>';
+              }).join('');
+            })()}
+          </td>
         </tr>
         <tfoot>
           <tr>
