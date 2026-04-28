@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -771,6 +772,15 @@ function shortStuLabel(p) {
   }
   return last;
 }
+function mkDutyBadge(gi, si, dutyKey, dutyVal) {
+  const labels = {stu:'Student',inst:'Instructor',ui:'UI/VID/Strap',tm:'TM',pass:'Pass',ds:'DS',jumper:'Jumper'};
+  const types = ['stu','inst','ui','tm','pass','ds','jumper'];
+  let opts = types.map(function(d) {
+    return '<option value="' + d + '"' + (d === dutyVal ? ' selected' : '') + '>' + labels[d] + '</option>';
+  }).join('');
+  return '<select onchange="setF(' + gi + ',' + si + ',\'' + dutyKey + '\',this.value)" title="Jump duty" style="font-size:9px;font-weight:bold;background:#1b2b3c;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:4px;max-width:75px">' + opts + '</select>';
+}
+
 function mkColTypeOpts(sel) {
   const types = [
     { val: 'stu',    label: 'Student' },
@@ -997,10 +1007,7 @@ function renderManifest() {
         // Duty badge: small dropdown defaulting to column type
         const dutyKey = fieldKey + 'Duty';
         const dutyVal = sl[dutyKey] || (val ? t : '');
-        const dutyLabels = {stu:'Student',inst:'Instructor',ui:'UI/VID/Strap',tm:'TM',pass:'Pass',ds:'DS',jumper:'Jumper'};
-        const dutyOpts = ['stu','inst','ui','tm','pass','ds','jumper']
-          .map(d => `<option value="${d}"${d===dutyVal?' selected':''}>${dutyLabels[d]}</option>`).join('');
-        const dutyBadge = val ? `<select onchange="setF(${gi},${si},'${dutyKey}',this.value)" title="Jump duty" style="font-size:9px;font-weight:bold;background:#1b2b3c;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 3px;margin-left:4px;max-width:75px">${dutyOpts}</select>` : '';
+        const dutyBadge = val ? mkDutyBadge(gi, si, dutyKey, dutyVal) : '';
         let extraCB = '';
         if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm' || t === 'ds')) {
           const alKey = fieldKey + 'AL';
