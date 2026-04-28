@@ -686,26 +686,30 @@ function slotWt(sl) {
   const colSum = allWt(sl.col0) + allWt(sl.col1) + allWt(sl.col2);
   return pWt(sl.stu, db.students) + instWt + uiWt + tmWt + pWt(sl.pass, db.students) + colSum;
 }
+function dutyDefaultEq(duty, boxes) {
+  // Returns the default equipment label for a given duty
+  if (duty === 'stu')                          return boxes[0] || 'MJ';
+  if (duty === 'inst' || duty === 'ds' || duty === 'ui' || duty === 'jumper') return boxes[1] || 'NS';
+  if (duty === 'tm')                           return boxes[2] || 'MTV3';
+  if (duty === 'pass')                         return ''; // no equipment for passengers
+  return '';
+}
+
 function eqCountInGroup(g, label) {
   if (!label) return 0;
   const types = g.colTypes || [];
+  const boxes = g.eqBoxes || ['MJ','NS','','','',''];
   let count = 0;
   g.slots.forEach(sl => {
     ['col0','col1','col2','col3'].forEach((colKey, ci) => {
       if (!sl[colKey]) return;
-      // Check individual equipment override first
       const slotEq = sl[colKey + 'Eq'];
       if (slotEq) {
         if (slotEq === label) count++;
         return;
       }
-      // Fall back to duty-based default equipment
       const duty = sl[colKey + 'Duty'] || types[ci] || '';
-      let defaultEq = '';
-      if (duty === 'stu') defaultEq = g.eqBoxes ? (g.eqBoxes[0] || '') : (g.mjLabel || '');
-      else if (duty === 'inst' || duty === 'tm' || duty === 'ds') defaultEq = g.eqBoxes ? (g.eqBoxes[1] || '') : (g.nsLabel || '');
-      else if (duty === 'ui' || duty === 'pass' || duty === 'jumper') defaultEq = g.eqBoxes ? (g.eqBoxes[2] || '') : (g.uiLabel || '');
-      if (defaultEq === label) count++;
+      if (dutyDefaultEq(duty, boxes) === label) count++;
     });
   });
   return count;
@@ -734,9 +738,7 @@ function grpTot(g)  {
       const colType = types[ci] || '';
       const duty = sl[colKey + 'Duty'] || colType;
       const boxes = g.eqBoxes || ['MJ','NS','','','',''];
-      if (duty === 'stu') eqSum += eqWt(boxes[0] || g.mjLabel);
-      else if (duty === 'inst' || duty === 'tm' || duty === 'ds') eqSum += eqWt(boxes[1] || g.nsLabel);
-      else if (duty === 'ui' || duty === 'pass' || duty === 'jumper') eqSum += eqWt(boxes[2] || g.uiLabel);
+      eqSum += eqWt(dutyDefaultEq(duty, boxes));
     });
   });
   return slotSum + eqSum;
@@ -1103,9 +1105,11 @@ function renderManifest() {
         const dutyKey = fieldKey + 'Duty';
         const dutyVal = sl[dutyKey] || (val ? t : '');
         const dutyBadge = val ? mkDutyBadge(gi, si, dutyKey, dutyVal) : '';
-        // Equipment override dropdown — defaults to group-level label for that column
+        // Equipment override dropdown — defaults based on duty
         const eqKey = fieldKey + 'Eq';
-        const groupEqDefault = ci === 0 ? g.mjLabel : (ci === 1 ? g.nsLabel : g.uiLabel);
+        const boxes = g.eqBoxes || ['MJ','NS','','','',''];
+        const slDuty = sl[fieldKey + 'Duty'] || t;
+        const groupEqDefault = dutyDefaultEq(slDuty, boxes);
         const eqVal = sl[eqKey] || '';
         const eqBadge = val ? mkEqOverrideBadge(gi, si, eqKey, eqVal, groupEqDefault) : '';
         let extraCB = '';
