@@ -676,7 +676,7 @@ function moveGroupTo(gi, newIdxStr) {
 
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
-  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','','','',''], pj: '', aj: '', colTypes: ['stu','inst','ui'] });
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['-','-','-','-','-','-'], pj: '', aj: '', colTypes: ['stu','inst','ui'] });
   redraw();
 }
 
@@ -703,9 +703,9 @@ function slotWt(sl) {
 }
 function dutyDefaultEq(duty, boxes) {
   // Returns the default equipment label for a given duty
-  if (duty === 'stu')                          return boxes[0] || 'MJ';
-  if (duty === 'inst' || duty === 'ds' || duty === 'ui' || duty === 'jumper') return boxes[1] || 'NS';
-  if (duty === 'tm')                           return boxes[2] || 'MTV3';
+  if (duty === 'stu')                          return boxes[0] || '-';
+  if (duty === 'inst' || duty === 'ds' || duty === 'ui' || duty === 'jumper') return boxes[1] || '-';
+  if (duty === 'tm')                           return boxes[2] || '-';
   if (duty === 'pass')                         return ''; // no equipment for passengers
   return '';
 }
@@ -713,7 +713,7 @@ function dutyDefaultEq(duty, boxes) {
 function eqCountInGroup(g, label) {
   if (!label) return 0;
   const types = g.colTypes || [];
-  const boxes = g.eqBoxes || ['MJ','NS','','','',''];
+  const boxes = g.eqBoxes || ['-','-','-','-','-','-'];
   let count = 0;
   g.slots.forEach(sl => {
     ['col0','col1','col2','col3'].forEach((colKey, ci) => {
@@ -752,7 +752,7 @@ function grpTot(g)  {
       // Fall back to group default based on duty
       const colType = types[ci] || '';
       const duty = sl[colKey + 'Duty'] || colType;
-      const boxes = g.eqBoxes || ['MJ','NS','','','',''];
+      const boxes = g.eqBoxes || ['-','-','-','-','-','-'];
       eqSum += eqWt(dutyDefaultEq(duty, boxes));
     });
   });
@@ -1037,7 +1037,7 @@ function mkEqLabelOpts(sel) {
 }
 function setGrpEqBox(gi, bi, val) {
   const g = db.groups[gi];
-  if (!g.eqBoxes) g.eqBoxes = ['MJ','NS','','','',''];
+  if (!g.eqBoxes) g.eqBoxes = ['-','-','-','-','-','-'];
   g.eqBoxes[bi] = val;
   redraw();
 }
@@ -1122,7 +1122,7 @@ function renderManifest() {
         const dutyBadge = val ? mkDutyBadge(gi, si, dutyKey, dutyVal) : '';
         // Equipment override dropdown — defaults based on duty
         const eqKey = fieldKey + 'Eq';
-        const boxes = g.eqBoxes || ['MJ','NS','','','',''];
+        const boxes = g.eqBoxes || ['-','-','-','-','-','-'];
         const slDuty = sl[fieldKey + 'Duty'] || t;
         const groupEqDefault = dutyDefaultEq(slDuty, boxes);
         const eqVal = sl[eqKey] || '';
@@ -1198,15 +1198,15 @@ function renderManifest() {
         </tr></thead>
         <tbody>${rows}</tbody>
         <tbody><tr class="counts-row">
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},0,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[0])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','','','',''])[0])}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},1,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[1])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','','','',''])[1])}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},2,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[2])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','','','',''])[2])}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},0,this.value)">${mkEqLabelOpts((g.eqBoxes||['-','-','-','-','-','-'])[0])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['-','-','-','-','-','-'])[0])}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},1,this.value)">${mkEqLabelOpts((g.eqBoxes||['-','-','-','-','-','-'])[1])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['-','-','-','-','-','-'])[1])}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},2,this.value)">${mkEqLabelOpts((g.eqBoxes||['-','-','-','-','-','-'])[2])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['-','-','-','-','-','-'])[2])}</span></td>
           <td></td>
         </tr>
         <tr class="counts-row">
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},3,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[3])}</select> <span class="cnt-num">${(g.eqBoxes||[])[3] ? eqCountInGroup(g, g.eqBoxes[3]) : ''}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},4,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[4])}</select> <span class="cnt-num">${(g.eqBoxes||[])[4] ? eqCountInGroup(g, g.eqBoxes[4]) : ''}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},5,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[5])}</select> <span class="cnt-num">${(g.eqBoxes||[])[5] ? eqCountInGroup(g, g.eqBoxes[5]) : ''}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},3,this.value)">${mkEqLabelOpts((g.eqBoxes||['-','-','-','-','-','-'])[3])}</select> <span class="cnt-num">${(g.eqBoxes||[])[3] ? eqCountInGroup(g, g.eqBoxes[3]) : ''}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},4,this.value)">${mkEqLabelOpts((g.eqBoxes||['-','-','-','-','-','-'])[4])}</select> <span class="cnt-num">${(g.eqBoxes||[])[4] ? eqCountInGroup(g, g.eqBoxes[4]) : ''}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},5,this.value)">${mkEqLabelOpts((g.eqBoxes||['-','-','-','-','-','-'])[5])}</select> <span class="cnt-num">${(g.eqBoxes||[])[5] ? eqCountInGroup(g, g.eqBoxes[5]) : ''}</span></td>
           <td></td>
         </tr></tbody>
         <tfoot>
