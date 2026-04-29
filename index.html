@@ -1203,12 +1203,12 @@ function renderManifest() {
           <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},2,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[2])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','','','',''])[2])}</span></td>
           <td></td>
         </tr>
-        ${(g.eqBoxes||['MJ','NS','','','',''])[2] ? `<tr class="counts-row">
+        <tr class="counts-row">
           <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},3,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[3])}</select> <span class="cnt-num">${(g.eqBoxes||[])[3] ? eqCountInGroup(g, g.eqBoxes[3]) : ''}</span></td>
           <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},4,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[4])}</select> <span class="cnt-num">${(g.eqBoxes||[])[4] ? eqCountInGroup(g, g.eqBoxes[4]) : ''}</span></td>
           <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},5,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[5])}</select> <span class="cnt-num">${(g.eqBoxes||[])[5] ? eqCountInGroup(g, g.eqBoxes[5]) : ''}</span></td>
           <td></td>
-        </tr>` : ''}</tbody>
+        </tr></tbody>
         <tfoot>
           <tr>
             <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="4">${(()=>{
