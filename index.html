@@ -102,6 +102,9 @@ select:focus{outline:none;border-color:#1b2b3c}
 /* MANIFEST TOOLBAR */
 .manifest-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
 
+.print-only{display:none}
+.screen-only{display:inline-block}
+
 @media print{
   @page { size: letter portrait; margin: 0.3in; }
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
@@ -162,6 +165,10 @@ select:focus{outline:none;border-color:#1b2b3c}
   tbody td:has(.al-text){overflow:visible !important;text-overflow:clip !important}
   /* Hide the styled AL badge in print since the text marker handles it */
   .al-badge{display:none !important}
+
+  /* Hide screen-only elements in print, show print-only elements */
+  .screen-only{display:none !important}
+  .print-only{display:inline-block !important}
 
   /* Counts row — equipment totals (one wide cell with 6 boxes) */
   .counts-row{background:#fff !important;border-top:2px solid #000 !important}
@@ -1190,15 +1197,22 @@ function renderManifest() {
           <th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
-        <tr class="counts-row">
+        <tbody><tr class="counts-row">
           <td colspan="4" style="padding:4px 6px">
             ${(()=>{
               const eqBoxes = g.eqBoxes || ['MJ','NS','','','',''];
               return eqBoxes.map((lbl, bi) => {
                 const cnt = lbl ? eqCountInGroup(g, lbl) : 0;
+                if (!lbl) {
+                  // Empty box - show only on screen for adding equipment
+                  return '<span class="screen-only" style="display:inline-flex;align-items:center;gap:2px;margin-right:6px">' +
+                    '<select class="cnt-sel" onchange="setGrpEqBox(' + gi + ',' + bi + ',this.value)">' + mkEqLabelOpts(lbl) + '</select>' +
+                    '</span>';
+                }
                 return '<span style="display:inline-flex;align-items:center;gap:2px;margin-right:6px">' +
-                  '<select class="cnt-sel" onchange="setGrpEqBox(' + gi + ',' + bi + ',this.value)">' + mkEqLabelOpts(lbl) + '</select>' +
-                  (lbl ? '<span class="cnt-num">' + cnt + '</span>' : '') +
+                  '<select class="cnt-sel screen-only" onchange="setGrpEqBox(' + gi + ',' + bi + ',this.value)">' + mkEqLabelOpts(lbl) + '</select>' +
+                  '<span class="print-only cnt-print" style="display:none;border:1.5px solid #000;padding:1px 5px;font-weight:bold;font-size:10px;border-radius:2px;background:#fff;color:#000">' + lbl + '</span>' +
+                  '<span class="cnt-num" style="margin-left:3px;font-weight:bold">' + cnt + '</span>' +
                   '</span>';
               }).join('');
             })()}
