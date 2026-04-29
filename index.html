@@ -113,10 +113,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   .al-badge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;background:#c0392b !important;color:#fff !important;font-size:9px !important;font-weight:bold !important;padding:1px 4px !important;border-radius:2px !important;margin-left:3px !important;display:inline-block !important}
   /* Hide AL checkbox label in print but keep the badge */
   tbody td label{display:none !important}
-  /* Duty badge in print — show as plain bold text */
-  tbody td select[title="Jump duty"]{appearance:none !important;-webkit-appearance:none !important;border:1px solid #000 !important;background:#fff !important;color:#000 !important;font-size:8px !important;font-weight:bold !important;padding:0 2px !important;width:auto !important}
-  /* Equipment override badge in print */
-  tbody td select[title="Equipment override"]{appearance:none !important;-webkit-appearance:none !important;border:1px solid #000 !important;background:#fff !important;color:#000 !important;font-size:8px !important;font-weight:bold !important;padding:0 2px !important;width:auto !important}
+
   #tab-manifest{display:block!important;padding:0}
   #grid{display:none!important}
 
@@ -148,7 +145,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   /* Body rows — alternating shading */
   tbody tr:nth-child(even){background:#f0f3f8 !important}
   tbody tr:nth-child(odd){background:#fff !important}
-  tbody td{padding:3px 5px;border-right:1px solid #ccc;border-bottom:1px solid #e0e4ec;font-size:9.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;color:#000 !important}
+  tbody td{padding:3px 5px;border-right:1px solid #ccc;border-bottom:1px solid #e0e4ec;font-size:9.5px;white-space:nowrap;vertical-align:middle;color:#000 !important}
   tbody td:last-child{border-right:none}
   tbody td:first-child{font-weight:bold;color:#1b2b3c !important}
 
@@ -160,7 +157,9 @@ select:focus{outline:none;border-color:#1b2b3c}
   /* Show the plain-text AL marker in print */
   .al-print{display:inline !important}
   /* Always show the AL text marker — bold red on screen and print */
-  .al-text{display:inline !important;font-weight:bold !important;color:#c0392b !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  .al-text{display:inline-block !important;font-weight:900 !important;color:#fff !important;background:#c0392b !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;padding:1px 5px !important;margin-left:4px !important;font-size:10px !important;border:1px solid #000 !important;border-radius:2px !important;letter-spacing:0.5px !important}
+  /* Make sure cells with AL don't truncate */
+  tbody td:has(.al-text){overflow:visible !important;text-overflow:clip !important}
   /* Hide the styled AL badge in print since the text marker handles it */
   .al-badge{display:none !important}
 
@@ -1125,7 +1124,7 @@ function renderManifest() {
         if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm' || t === 'ds')) {
           const alKey = fieldKey + 'AL';
           const alBadge2 = sl[alKey]
-            ? `<span class="al-badge" style="display:inline-block;background:#c0392b;color:#fff;font-size:10px;font-weight:bold;padding:1px 5px;border-radius:3px;margin-left:4px;letter-spacing:0.3px;border:1px solid #c0392b">AL</span><span class="al-print" style="display:none;font-weight:bold;color:#000;margin-left:4px"> [AL]</span>`
+            ? ``
             : '';
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
@@ -1204,7 +1203,7 @@ function renderManifest() {
               }).join('');
             })()}
           </td>
-        </tr>
+        </tr></tbody>
         <tfoot>
           <tr>
             <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="4">${(()=>{
@@ -2036,3 +2035,4 @@ function saveRosterItem(role, i) {
 </script>
 </body>
 </html>
+
