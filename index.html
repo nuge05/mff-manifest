@@ -159,12 +159,17 @@ select:focus{outline:none;border-color:#1b2b3c}
   tbody td select[title="Equipment override"]{display:none !important}
   /* Show the plain-text AL marker in print */
   .al-print{display:inline !important}
+  /* Always show the AL text marker — bold red on screen and print */
+  .al-text{display:inline !important;font-weight:bold !important;color:#c0392b !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
   /* Hide the styled AL badge in print since the text marker handles it */
   .al-badge{display:none !important}
 
   /* Counts row — equipment totals (one wide cell with 6 boxes) */
   .counts-row{background:#fff !important;border-top:2px solid #000 !important}
   .counts-row td{font-size:10px !important;padding:6px 8px !important;font-weight:bold !important;color:#000 !important;background:#fff !important;white-space:nowrap !important;overflow:visible !important}
+  .counts-row td span{display:inline-flex !important;align-items:center !important;gap:2px !important;margin-right:8px !important;color:#000 !important}
+  .counts-row td .cnt-sel{display:inline-block !important;width:auto !important;max-width:none !important;background:#fff !important;color:#000 !important;border:1.5px solid #000 !important;font-size:10px !important;font-weight:bold !important;padding:1px 6px !important;appearance:none !important;-webkit-appearance:none !important;border-radius:2px !important;pointer-events:none !important;text-overflow:clip !important;overflow:visible !important}
+  .counts-row td .cnt-num{display:inline-block !important;font-size:11px !important;font-weight:bold !important;color:#000 !important;margin-left:3px !important}
 
   /* Totals footer — DARK TEXT on WHITE for reliable print */
   tfoot tr{background:#fff !important}
@@ -1124,7 +1129,8 @@ function renderManifest() {
             : '';
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
-        return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${dutyBadge}${eqBadge}${extraCB}</td>`;
+        const alPrintMarker = sl[fieldKey + 'AL'] && val ? '<span class="al-text" style="font-weight:bold;color:#c0392b;margin-left:4px"> AL</span>' : '';
+        return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${alPrintMarker}${dutyBadge}${eqBadge}${extraCB}</td>`;
       };
       const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
       return `<tr>
