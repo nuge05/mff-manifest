@@ -1110,6 +1110,11 @@ function renderManifest() {
         sl[f] = '';
         sl[f + 'AL'] = false;
       });
+      // Clear stale per-slot equipment overrides one-time
+      if (!sl._eqMigrated) {
+        ['col0Eq','col1Eq','col2Eq','col3Eq'].forEach(f => { sl[f] = ''; });
+        sl._eqMigrated = true;
+      }
       sl._migrated = true;
     });
   });
@@ -1220,18 +1225,24 @@ function renderManifest() {
           <th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
-        <tbody><tr class="counts-row">
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},0,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','MTV3','','',''])[0])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','MTV3','','',''])[0])}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},1,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','MTV3','','',''])[1])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','MTV3','','',''])[1])}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},2,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','MTV3','','',''])[2])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','MTV3','','',''])[2])}</span></td>
-          <td></td>
-        </tr>
-        <tr class="counts-row">
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},3,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','MTV3','','',''])[3])}</select> <span class="cnt-num">${(g.eqBoxes||[])[3] ? eqCountInGroup(g, g.eqBoxes[3]) : ''}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},4,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','MTV3','','',''])[4])}</select> <span class="cnt-num">${(g.eqBoxes||[])[4] ? eqCountInGroup(g, g.eqBoxes[4]) : ''}</span></td>
-          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},5,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','MTV3','','',''])[5])}</select> <span class="cnt-num">${(g.eqBoxes||[])[5] ? eqCountInGroup(g, g.eqBoxes[5]) : ''}</span></td>
-          <td></td>
-        </tr></tbody>
+        <tbody>${(()=>{
+          const eq = getActiveEquipment(g);
+          if (eq.length === 0) return '<tr class="counts-row"><td></td><td></td><td></td><td></td></tr>';
+          let html = '';
+          for (let i = 0; i < eq.length; i += 3) {
+            html += '<tr class="counts-row">';
+            for (let j = 0; j < 3; j++) {
+              const item = eq[i + j];
+              if (item) {
+                html += '<td><span class="cnt-label" style="font-weight:bold;border:1.5px solid #1b2b3c;padding:2px 8px;border-radius:3px;background:#fff;display:inline-block">' + item.label + '</span> <span class="cnt-num" style="margin-left:6px;font-weight:bold">' + item.count + '</span></td>';
+              } else {
+                html += '<td></td>';
+              }
+            }
+            html += '<td></td></tr>';
+          }
+          return html;
+        })()}</tbody>
         <tfoot>
           <tr>
             <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="4">${(()=>{
