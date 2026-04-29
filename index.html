@@ -725,7 +725,7 @@ function getActiveEquipment(g) {
         const duty = sl[colKey + 'Duty'] || types[ci] || '';
         eq = dutyDefaultEq(duty, boxes);
       }
-      if (eq && eq !== '-') {
+      if (eq && eq !== '-' && eq !== 'TP') {
         counts[eq] = (counts[eq] || 0) + 1;
       }
     });
@@ -882,31 +882,8 @@ function setSlotEq(el) {
   const si = parseInt(el.dataset.si);
   const fld = el.dataset.fld;
   db.groups[gi].slots[si][fld] = el.value;
-  // Don't redraw — just save so we don't lose focus
-  saveDB();
-  // Update weight display only
-  updateSummary();
-  // Re-render just the tfoot of this group
-  const grpEls = document.querySelectorAll('.grp');
-  if (grpEls[gi]) {
-    const tfoot = grpEls[gi].querySelector('tfoot td');
-    if (tfoot) {
-      const g = db.groups[gi];
-      const tot = grpTot(g);
-      const slots = g.slots;
-      const paxAll = slots.reduce((b,sl)=>b+(sl.col0?1:0)+(sl.col1?1:0)+(sl.col2?1:0)+(sl.col3?1:0),0);
-      const airland = db.night ? slots.reduce((b,sl)=>b+(sl.col0AL?1:0)+(sl.col1AL?1:0)+(sl.col2AL?1:0)+(sl.col3AL?1:0),0) : 0;
-      const canopies = slots.reduce((b,sl)=>{
-        const isPass = (ck,ci) => { const d = sl[ck+'Duty'] || (g.colTypes||[])[ci]; return d==='pass'; };
-        return b+(sl.col0&&!sl.col0AL&&!isPass('col0',0)?1:0)+(sl.col1&&!sl.col1AL&&!isPass('col1',1)?1:0)+(sl.col2&&!sl.col2AL&&!isPass('col2',2)?1:0);
-      },0);
-      if (db.night) {
-        tfoot.innerHTML = 'Pax: ' + paxAll + ' &nbsp;&middot;&nbsp; Jumpers: ' + (paxAll-airland) + ' &nbsp;&middot;&nbsp; Canopies: ' + canopies + ' &nbsp;&middot;&nbsp; Airland: ' + airland + ' &nbsp;&middot;&nbsp; Wt: ' + tot + ' lbs';
-      } else {
-        tfoot.innerHTML = 'Jumpers: ' + paxAll + ' &nbsp;&middot;&nbsp; Canopies: ' + canopies + ' &nbsp;&middot;&nbsp; Wt: ' + tot + ' lbs';
-      }
-    }
-  }
+  // Full redraw so auto-eq totals row updates with new equipment
+  redraw();
 }
 
 function mkColTypeOpts(sel) {
