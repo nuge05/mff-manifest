@@ -1198,25 +1198,16 @@ function renderManifest() {
         </tr></thead>
         <tbody>${rows}</tbody>
         <tbody><tr class="counts-row">
-          <td colspan="4" style="padding:4px 6px">
-            ${(()=>{
-              const eqBoxes = g.eqBoxes || ['MJ','NS','','','',''];
-              return eqBoxes.map((lbl, bi) => {
-                const cnt = lbl ? eqCountInGroup(g, lbl) : 0;
-                if (!lbl) {
-                  // Empty box - show only on screen for adding equipment
-                  return '<span class="screen-only" style="display:inline-flex;align-items:center;gap:2px;margin-right:6px">' +
-                    '<select class="cnt-sel" onchange="setGrpEqBox(' + gi + ',' + bi + ',this.value)">' + mkEqLabelOpts(lbl) + '</select>' +
-                    '</span>';
-                }
-                return '<span style="display:inline-flex;align-items:center;gap:2px;margin-right:6px">' +
-                  '<select class="cnt-sel screen-only" onchange="setGrpEqBox(' + gi + ',' + bi + ',this.value)">' + mkEqLabelOpts(lbl) + '</select>' +
-                  '<span class="print-only cnt-print" style="border:1.5px solid #000;padding:1px 5px;font-weight:bold;font-size:10px;border-radius:2px;background:#fff;color:#000">' + lbl + '</span>' +
-                  '<span class="cnt-num" style="margin-left:3px;font-weight:bold">' + cnt + '</span>' +
-                  '</span>';
-              }).join('');
-            })()}
-          </td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},0,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[0])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','','','',''])[0])}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},1,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[1])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','','','',''])[1])}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},2,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[2])}</select> <span class="cnt-num">${eqCountInGroup(g, (g.eqBoxes||['MJ','NS','','','',''])[2])}</span></td>
+          <td></td>
+        </tr>
+        <tr class="counts-row">
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},3,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[3])}</select> <span class="cnt-num">${(g.eqBoxes||[])[3] ? eqCountInGroup(g, g.eqBoxes[3]) : ''}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},4,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[4])}</select> <span class="cnt-num">${(g.eqBoxes||[])[4] ? eqCountInGroup(g, g.eqBoxes[4]) : ''}</span></td>
+          <td><select class="cnt-sel" onchange="setGrpEqBox(${gi},5,this.value)">${mkEqLabelOpts((g.eqBoxes||['MJ','NS','','','',''])[5])}</select> <span class="cnt-num">${(g.eqBoxes||[])[5] ? eqCountInGroup(g, g.eqBoxes[5]) : ''}</span></td>
+          <td></td>
         </tr></tbody>
         <tfoot>
           <tr>
