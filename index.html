@@ -1092,6 +1092,10 @@ function renderManifest() {
         ['col0Eq','col1Eq','col2Eq','col3Eq'].forEach(f => { sl[f] = ''; });
         sl._eqMigrated = true;
       }
+      // Clear orphaned AL flags where the slot is empty (no jumper)
+      ['col0','col1','col2','col3'].forEach(f => {
+        if (!sl[f] && sl[f + 'AL']) sl[f + 'AL'] = false;
+      });
       sl._migrated = true;
     });
   });
