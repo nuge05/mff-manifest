@@ -902,6 +902,7 @@ function mkColTypeOpts(sel) {
     { val: 'tm',     label: 'TM' },
     { val: 'pass',   label: 'Pass' },
     { val: 'ds',     label: 'DS' },
+    { val: 'safety', label: 'Safety' },
     { val: 'jumper', label: 'Jumper' }
   ];
   return types.map(t => `<option value="${t.val}"${t.val === sel ? ' selected' : ''}>${t.label}</option>`).join('');
@@ -1145,7 +1146,7 @@ function renderManifest() {
         const eqVal = sl[eqKey] || '';
         const eqBadge = val ? mkEqOverrideBadge(gi, si, eqKey, eqVal, groupEqDefault) : '';
         let extraCB = '';
-        if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm' || t === 'ds')) {
+        if (db.night && val && (t === 'inst' || t === 'ui' || t === 'jumper' || t === 'tm' || t === 'ds' || t === 'safety')) {
           const alKey = fieldKey + 'AL';
           const alBadge2 = sl[alKey]
             ? ``
