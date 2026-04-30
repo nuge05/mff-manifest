@@ -159,9 +159,9 @@ select:focus{outline:none;border-color:#1b2b3c}
   tbody td select[title="Equipment override"]{display:none !important}
   /* Show the plain-text AL marker in print */
   .al-print{display:inline !important}
-  /* Always show the AL text marker — bold red on screen and print */
-  .al-text{display:inline-block !important;font-weight:900 !important;color:#fff !important;background:#c0392b !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;padding:0px 3px !important;margin-left:3px !important;font-size:8px !important;border:1px solid #000 !important;border-radius:2px !important;letter-spacing:0 !important;line-height:1.2 !important;vertical-align:middle !important}
-  /* Cells with AL must clip overflow so badge stays in its column */
+  /* AL marker as plain bold text right after name — no box, no overflow */
+  .al-text{display:inline !important;font-weight:bold !important;color:#c0392b !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;font-size:9px !important;margin-left:3px !important;background:transparent !important;border:none !important;padding:0 !important;letter-spacing:0.5px !important}
+  /* Cells must clip overflow */
   tbody td{overflow:hidden !important}
   /* Hide the styled AL badge in print since the text marker handles it */
   .al-badge{display:none !important}
@@ -1147,7 +1147,7 @@ function renderManifest() {
             : '';
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
-        const alPrintMarker = sl[fieldKey + 'AL'] && val ? '<span class="al-text" style="font-weight:bold;color:#c0392b;margin-left:4px"> AL</span>' : '';
+        const alPrintMarker = sl[fieldKey + 'AL'] && val ? '<span class="al-text" style="font-weight:bold;color:#c0392b;margin-left:4px;font-size:11px">AL</span>' : '';
         return `<td><select onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${alPrintMarker}${dutyBadge}${eqBadge}${extraCB}</td>`;
       };
       const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
