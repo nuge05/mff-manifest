@@ -681,7 +681,10 @@ function addGroup() {
 }
 
 function removeGroup(gi) {
-  if (!confirm('Remove group ' + db.groups[gi].letter + '?')) return;
+  const g = db.groups[gi];
+  // Use custom name if set, otherwise use the position letter (what's actually displayed)
+  const displayLabel = g.customName || LTR[gi];
+  if (!confirm('Remove group ' + displayLabel + '?')) return;
   db.groups.splice(gi, 1);
   db.groups.forEach((g, i) => g.letter = LTR[i]);
   redraw();
