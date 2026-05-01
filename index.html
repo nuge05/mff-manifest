@@ -1154,7 +1154,21 @@ function renderManifest() {
           extraCB = `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl[alKey]?'checked':''} onchange="setF(${gi},${si},'${alKey}',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge2}`;
         }
         const isAL = !!(sl[fieldKey + 'AL'] && val);
-        const printName = val ? (val + (isAL ? ' AL' : '')) : '';
+        const printShortName = (() => {
+          if (!val) return '';
+          if (t === 'stu') {
+            const p = db.students.find(x => x.name === val);
+            return p ? shortStuLabel(p) : getLastName(val);
+          }
+          // For non-student columns, search all relevant rosters to find the person object
+          const allLists = [db.instructors, db.straps, db.flight1, db.ui];
+          for (const list of allLists) {
+            const p = list.find(x => x.name === val);
+            if (p) return shortLabel(p, list);
+          }
+          return getLastName(val);
+        })();
+        const printName = printShortName + (isAL ? ' AL' : '');
         const printCell = val ? `<div class="print-name" style="display:none;font-size:9.5px;font-weight:${fieldKey==='col0'?'bold':'normal'};color:#000">${printName}</div>` : '';
         return `<td><select class="screen-only" onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${printCell}${dutyBadge}${eqBadge}${extraCB}</td>`;
       };
