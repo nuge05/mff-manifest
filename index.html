@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1249,7 +1250,7 @@ function renderManifest() {
             <span style="font-size:10px;color:#8ab4d4;font-weight:bold">Lift</span>
             <input type="text" value="${g.lift||''}" placeholder="" oninput="setGrpLift(${gi},this.value)" style="font-size:10px;font-weight:bold;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 6px;width:60px">
           </span>
-          <span class="grp-meta" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
+          <span class="grp-meta screen-only" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span><span class="grp-meta print-only" style="margin-left:8px;font-size:10px">${(()=>{const d=document.getElementById('manifest-date').value;if(!d)return '';const p=d.split('-');return p[1]+'/'+p[2]+'/'+p[0];})()}</span>
         </div>
         <div class="grp-hd-btns">
           <button onclick="addSlot(${gi})">+ Row</button>
