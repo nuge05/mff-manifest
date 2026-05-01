@@ -226,6 +226,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   <div class="s-item"><span class="s-lbl">Total MJ</span><span class="s-val" id="s-mj">0</span></div>
   <div class="s-item"><span class="s-lbl">Total NS</span><span class="s-val" id="s-ns">0</span></div>
   <div class="s-item"><span class="s-lbl">Total acft wt</span><span class="s-val" id="s-wt">0 lbs</span></div>
+  <div class="s-item" style="margin-left:auto"><span class="s-lbl">Date</span><span class="s-val" id="s-date">—</span></div>
 </div>
 
 <!-- TAB BAR -->
@@ -421,7 +422,7 @@ select:focus{outline:none;border-color:#1b2b3c}
     <span style="font-size:12px;color:#888">Groups A – H max</span>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
       <label style="font-size:12px;color:#555;font-weight:bold">Date:</label>
-      <input type="date" id="manifest-date" style="font-size:12px;border:1px solid #bbb;border-radius:3px;padding:4px 7px;background:#fff;color:#111" onchange="renderGroups()">
+      <input type="date" id="manifest-date" style="font-size:12px;border:1px solid #bbb;border-radius:3px;padding:4px 7px;background:#fff;color:#111" onchange="renderGroups();updateSummary()">
     </div>
     <button onclick="printManifest()">&#128438; Print manifest</button>
     <button onclick="saveManifest()" style="background:#1b2b3c;color:#fff;border-color:#1b2b3c">&#128190; Save</button>
@@ -1357,6 +1358,9 @@ function updateSummary() {
   document.getElementById('s-mj').textContent      = mj;
   document.getElementById('s-ns').textContent      = ns;
   document.getElementById('s-wt').textContent      = wt + ' lbs';
+  const d = document.getElementById('manifest-date').value;
+  if (d) { const p = d.split('-'); document.getElementById('s-date').textContent = p[1]+'/'+p[2]+'/'+p[0]; }
+  else { document.getElementById('s-date').textContent = '—'; }
 }
 
 function redraw() {
