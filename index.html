@@ -415,7 +415,7 @@ select:focus{outline:none;border-color:#1b2b3c}
     </label>
     <span style="display:inline-flex;align-items:center;gap:5px;background:#e8edf3;border:1px solid #c5cdd8;border-radius:4px;padding:4px 8px" id="add-grp-cluster">
       <span style="font-size:11px;color:#555;font-weight:bold;white-space:nowrap">Color:</span>
-      <span id="grp-color-swatches" style="display:inline-flex;gap:3px;align-items:center"></span>
+      <span id="grp-color-swatches" style="display:inline-flex;gap:3px;align-items:center"><span title="Default" onclick="selectNewGrpColor(this,'#1b2b3c')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1b2b3c;border:2px solid #111;box-shadow:0 0 0 2px #fff, 0 0 0 4px #1b2b3c;cursor:pointer;flex-shrink:0"></span><span title="Magenta" onclick="selectNewGrpColor(this,'#b0006e')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#b0006e;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Red" onclick="selectNewGrpColor(this,'#c0392b')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#c0392b;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Maroon" onclick="selectNewGrpColor(this,'#7a1428')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#7a1428;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Purple" onclick="selectNewGrpColor(this,'#6a2fa0')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#6a2fa0;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Dark Blue" onclick="selectNewGrpColor(this,'#1a3a8f')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1a3a8f;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Blue" onclick="selectNewGrpColor(this,'#1565c0')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1565c0;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Cyan" onclick="selectNewGrpColor(this,'#006e8f')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#006e8f;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Teal" onclick="selectNewGrpColor(this,'#00695c')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#00695c;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Green" onclick="selectNewGrpColor(this,'#1e7e34')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1e7e34;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Dark Green" onclick="selectNewGrpColor(this,'#1b4d20')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1b4d20;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span></span>
       <button class="add-grp" onclick="addGroup()" style="margin-left:2px">+ Add group</button>
     </span>
     <span style="font-size:12px;color:#888">Groups A – H max</span>
@@ -702,19 +702,17 @@ function moveGroupTo(gi, newIdxStr) {
 
 let _newGrpColor = '#1b2b3c'; // currently selected color for next new group
 
-function renderAddGrpSwatches() {
-  const el = document.getElementById('grp-color-swatches');
-  if (!el) return;
-  el.innerHTML = GRP_COLORS.map(function(c) {
-    var active = _newGrpColor === c.hex;
-    var border = active ? '#1b2b3c' : 'rgba(0,0,0,0.15)';
-    var shadow = active ? '0 0 0 2px #fff, 0 0 0 4px ' + c.hex : 'none';
-    return '<span title="' + c.label + '" onclick="selectNewGrpColor(\'' + c.hex + '\')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:' + c.hex + ';border:2px solid ' + border + ';box-shadow:' + shadow + ';cursor:pointer;flex-shrink:0"></span>';
-  }).join('');
-}
-function selectNewGrpColor(hex) {
+function selectNewGrpColor(el, hex) {
   _newGrpColor = hex;
-  renderAddGrpSwatches();
+  var container = document.getElementById('grp-color-swatches');
+  if (container) {
+    container.querySelectorAll('span').forEach(function(s) {
+      s.style.border = '2px solid rgba(0,0,0,0.15)';
+      s.style.boxShadow = 'none';
+    });
+  }
+  el.style.border = '2px solid #111';
+  el.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px ' + hex;
 }
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
@@ -1367,9 +1365,7 @@ function redraw() {
   renderProfiles();
   renderAircraft();
   renderGroupNames();
-  renderGnColorSwatches();
   renderManifest();
-  renderAddGrpSwatches();
   updateSummary();
   // Keep Night checkbox UI in sync with db.night
   const nightCb = document.getElementById('night-toggle');
@@ -1695,16 +1691,6 @@ function dragEnd(e) {
 // ── GROUP NAMES ──────────────────────────────────────────
 let _gnColor = '#1b2b3c'; // selected color for next group name
 
-function renderGnColorSwatches() {
-  const el = document.getElementById('gn-color-swatches');
-  if (!el) return;
-  el.innerHTML = GRP_COLORS.map(function(c) {
-    var active = _gnColor === c.hex;
-    var border = active ? '#1b2b3c' : 'rgba(0,0,0,0.15)';
-    var shadow = active ? '0 0 0 2px #fff, 0 0 0 4px ' + c.hex : 'none';
-    return '<span title="' + c.label + '" onclick="selectGnColor(\'' + c.hex + '\')" style="display:inline-block;width:18px;height:18px;border-radius:50%;background:' + c.hex + ';border:2px solid ' + border + ';box-shadow:' + shadow + ';cursor:pointer;flex-shrink:0"></span>';
-  }).join('');
-}
 function selectGnColor(el, hex) {
   _gnColor = hex;
   // Update visual selection on the static swatches
