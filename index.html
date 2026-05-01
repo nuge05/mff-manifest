@@ -1508,11 +1508,16 @@ function loadManifest(key) {
   db.flight1     = snap.flight1     || [];
   db.ui          = snap.ui          || [];
   db.equipment   = snap.equipment   || [];
+  db.groupNames  = snap.groupNames  || [];
   if (snap.mode) db.mode = snap.mode;
-  db.groups      = snap.groups      || [];
+  // Store into the correct bucket based on mode
+  const groups = snap.mffGroups || snap.tandemGroups || snap.groups || [];
+  if (db.mode === 'TANDEM') db.tandemGroups = groups;
+  else db.mffGroups = groups;
   document.getElementById('manifest-date').value = snap.date || '';
   setMode(db.mode);
   toggleArchive();
+  redraw();
 }
 
 function deleteArchive(key, date) {
