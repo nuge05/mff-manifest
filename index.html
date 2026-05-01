@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1211,7 +1210,8 @@ function renderManifest() {
           return getLastName(val);
         })();
         const printName = printShortName + (isAL ? ' AL' : '');
-        const printCell = val ? `<div class="print-name" style="display:none;font-size:9.5px;font-weight:${fieldKey==='col0'?'bold':'normal'};color:#000">${printName}</div>` : '';
+        const slotNum = fieldKey === 'col0' ? '<span style="margin-right:4px;opacity:0.6">' + (si+1) + '.</span>' : '';
+        const printCell = val ? `<div class="print-name" style="display:none;font-size:9.5px;font-weight:${fieldKey==='col0'?'bold':'normal'};color:#000">${slotNum}${printName}</div>` : (fieldKey === 'col0' ? `<div class="print-name" style="display:none;font-size:9.5px;color:#aaa">${si+1}.</div>` : '');
         return `<td><select class="screen-only" onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${printCell}${dutyBadge}${eqBadge}${extraCB}</td>`;
       };
       const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
