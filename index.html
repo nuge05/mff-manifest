@@ -129,7 +129,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   .grp table{width:100%;table-layout:fixed;border-collapse:collapse}
 
   /* Group header — works with OR without background color */
-  .grp-hd{background:#1b2b3c !important;color:#fff !important;font-size:10px !important;padding:5px 7px;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:3px;border-bottom:3px solid #000}
+  .grp-hd{color:#fff !important;font-size:10px !important;padding:5px 7px;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:3px;border-bottom:3px solid #000}
   .grp-hd > div:first-child{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex:1}
   .grp-hd *{color:#fff !important}
   .grp-letter{font-size:13px !important;font-weight:900 !important;letter-spacing:0.5px;color:#fff !important;margin-right:2px}
@@ -379,7 +379,11 @@ select:focus{outline:none;border-color:#1b2b3c}
       <button class="sm danger" onclick="clearGroupNames()">Clear all</button>
     </h3>
     <div class="tag-list" id="groupname-list"><span class="none-lbl">None added</span></div>
-    <div class="add-row" style="flex-wrap:wrap;gap:6px">
+    <div class="add-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+      <span style="font-size:12px;font-weight:bold;color:#555">Color:</span>
+      <span id="gn-color-swatches" style="display:inline-flex;gap:5px;align-items:center;flex-wrap:wrap"><span title="Default" onclick="selectGnColor(this,'#1b2b3c')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#1b2b3c;border:2px solid #111;box-shadow:0 0 0 2px #fff, 0 0 0 4px #1b2b3c;cursor:pointer;flex-shrink:0"></span><span title="Magenta" onclick="selectGnColor(this,'#b0006e')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#b0006e;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Red" onclick="selectGnColor(this,'#c0392b')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#c0392b;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Maroon" onclick="selectGnColor(this,'#7a1428')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#7a1428;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Purple" onclick="selectGnColor(this,'#6a2fa0')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#6a2fa0;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Dark Blue" onclick="selectGnColor(this,'#1a3a8f')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#1a3a8f;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Blue" onclick="selectGnColor(this,'#1565c0')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#1565c0;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Cyan" onclick="selectGnColor(this,'#006e8f')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#006e8f;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Teal" onclick="selectGnColor(this,'#00695c')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#00695c;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Green" onclick="selectGnColor(this,'#1e7e34')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#1e7e34;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Dark Green" onclick="selectGnColor(this,'#1b4d20')" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#1b4d20;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span></span>
+    </div>
+    <div class="add-row" style="flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px">
       <input class="nm" id="gnn" placeholder="Group name (e.g. Alpha, Night Ops)" style="width:280px" onkeydown="if(event.key==='Enter')addGroupName()">
       <button onclick="addGroupName()">+ Add</button>
     </div>
@@ -409,7 +413,11 @@ select:focus{outline:none;border-color:#1b2b3c}
       <input type="checkbox" id="night-toggle" onchange="toggleNight(this.checked)" style="margin:0;cursor:pointer">
       Airland
     </label>
-    <button class="add-grp" onclick="addGroup()">+ Add group</button>
+    <span style="display:inline-flex;align-items:center;gap:5px;background:#e8edf3;border:1px solid #c5cdd8;border-radius:4px;padding:4px 8px" id="add-grp-cluster">
+      <span style="font-size:11px;color:#555;font-weight:bold;white-space:nowrap">Color:</span>
+      <span id="grp-color-swatches" style="display:inline-flex;gap:3px;align-items:center"></span>
+      <button class="add-grp" onclick="addGroup()" style="margin-left:2px">+ Add group</button>
+    </span>
     <span style="font-size:12px;color:#888">Groups A – H max</span>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
       <label style="font-size:12px;color:#555;font-weight:bold">Date:</label>
@@ -439,6 +447,19 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <script>
 const LTR = 'ABCDEFGH'.split('');
+const GRP_COLORS = [
+  { label: 'Default',    hex: '#1b2b3c' },
+  { label: 'Magenta',    hex: '#b0006e' },
+  { label: 'Red',        hex: '#c0392b' },
+  { label: 'Maroon',     hex: '#7a1428' },
+  { label: 'Purple',     hex: '#6a2fa0' },
+  { label: 'Dark Blue',  hex: '#1a3a8f' },
+  { label: 'Blue',       hex: '#1565c0' },
+  { label: 'Cyan',       hex: '#006e8f' },
+  { label: 'Teal',       hex: '#00695c' },
+  { label: 'Green',      hex: '#1e7e34' },
+  { label: 'Dark Green', hex: '#1b4d20' },
+];
 const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], groupNames:[], mffGroups:[], tandemGroups:[], mode:'MFF', night:false,
   get groups() { return this.mode === 'TANDEM' ? this.tandemGroups : this.mffGroups; },
   set groups(v) { if (this.mode === 'TANDEM') this.tandemGroups = v; else this.mffGroups = v; }
@@ -679,9 +700,25 @@ function moveGroupTo(gi, newIdxStr) {
   redraw();
 }
 
+let _newGrpColor = '#1b2b3c'; // currently selected color for next new group
+
+function renderAddGrpSwatches() {
+  const el = document.getElementById('grp-color-swatches');
+  if (!el) return;
+  el.innerHTML = GRP_COLORS.map(function(c) {
+    var active = _newGrpColor === c.hex;
+    var border = active ? '#1b2b3c' : 'rgba(0,0,0,0.15)';
+    var shadow = active ? '0 0 0 2px #fff, 0 0 0 4px ' + c.hex : 'none';
+    return '<span title="' + c.label + '" onclick="selectNewGrpColor(\'' + c.hex + '\')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:' + c.hex + ';border:2px solid ' + border + ';box-shadow:' + shadow + ';cursor:pointer;flex-shrink:0"></span>';
+  }).join('');
+}
+function selectNewGrpColor(hex) {
+  _newGrpColor = hex;
+  renderAddGrpSwatches();
+}
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
-  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','MTV3','','',''], pj: '', aj: '', colTypes: ['stu','inst','ui'] });
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','MTV3','','',''], pj: '', aj: '', colTypes: ['stu','inst','ui'], color: _newGrpColor });
   redraw();
 }
 
@@ -1057,6 +1094,11 @@ function setGrpLabel(gi, field, val) {
   updateSummary();
 }
 
+function setGrpColor(gi, hex) {
+  db.groups[gi].color = hex;
+  redraw();
+}
+
 function toggleNight(on) {
   db.night = !!on;
   redraw();
@@ -1186,11 +1228,12 @@ function renderManifest() {
 
     return `
     <div class="grp" draggable="true" data-gi="${gi}" ondragstart="dragStart(event,${gi})" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dragDrop(event,${gi})" ondragend="dragEnd(event)">
-      <div class="grp-hd">
+      <div class="grp-hd" style="background:${g.color||'#1b2b3c'};-webkit-print-color-adjust:exact;print-color-adjust:exact">
         <div>
           <span class="drag-handle" title="Drag to reorder" style="cursor:grab;padding:0 8px 0 2px;font-size:14px;color:#8ab4d4;user-select:none">&#8801;</span>
           <span class="grp-letter">GRP</span>
           <select title="Click to change" style="font-size:14px;font-weight:bold;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 6px;margin-left:4px;width:auto;min-width:50px;max-width:110px" onchange="setGrpName(${gi},this.value)">${mkGrpLetterOpts(g.customName, g.letter)}</select>
+
           <span style="font-size:10px;color:#8ab4d4;margin-left:10px">PJ</span>
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
           <span style="font-size:10px;color:#8ab4d4;margin-left:6px">AJ</span>
@@ -1324,7 +1367,9 @@ function redraw() {
   renderProfiles();
   renderAircraft();
   renderGroupNames();
+  renderGnColorSwatches();
   renderManifest();
+  renderAddGrpSwatches();
   updateSummary();
   // Keep Night checkbox UI in sync with db.night
   const nightCb = document.getElementById('night-toggle');
@@ -1643,10 +1688,35 @@ function dragEnd(e) {
 }
 
 // ── GROUP NAMES ──────────────────────────────────────────
+let _gnColor = '#1b2b3c'; // selected color for next group name
+
+function renderGnColorSwatches() {
+  const el = document.getElementById('gn-color-swatches');
+  if (!el) return;
+  el.innerHTML = GRP_COLORS.map(function(c) {
+    var active = _gnColor === c.hex;
+    var border = active ? '#1b2b3c' : 'rgba(0,0,0,0.15)';
+    var shadow = active ? '0 0 0 2px #fff, 0 0 0 4px ' + c.hex : 'none';
+    return '<span title="' + c.label + '" onclick="selectGnColor(\'' + c.hex + '\')" style="display:inline-block;width:18px;height:18px;border-radius:50%;background:' + c.hex + ';border:2px solid ' + border + ';box-shadow:' + shadow + ';cursor:pointer;flex-shrink:0"></span>';
+  }).join('');
+}
+function selectGnColor(el, hex) {
+  _gnColor = hex;
+  // Update visual selection on the static swatches
+  const container = document.getElementById('gn-color-swatches');
+  if (container) {
+    container.querySelectorAll('span').forEach(function(s) {
+      s.style.border = '2px solid rgba(0,0,0,0.15)';
+      s.style.boxShadow = 'none';
+    });
+  }
+  el.style.border = '2px solid #111';
+  el.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px ' + hex;
+}
 function addGroupName() {
   const name = document.getElementById('gnn').value.trim();
   if (!name) return document.getElementById('gnn').focus();
-  db.groupNames.push({ name });
+  db.groupNames.push({ name, color: _gnColor });
   document.getElementById('gnn').value = '';
   document.getElementById('gnn').focus();
   redraw();
@@ -1659,8 +1729,10 @@ function editGroupName(i) {
   const a = db.groupNames[i];
   const tagEl = document.getElementById('gn-tag-' + i);
   if (!tagEl) return;
+  tagEl.style.flexDirection = 'row';
+  tagEl.style.padding = '4px 8px';
   tagEl.innerHTML = `
-    <input id="egnn-${i}" value="${a.name||''}" placeholder="Group name" style="width:220px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px">
+    <input id="egnn-${i}" value="${a.name||''}" placeholder="Group name" style="width:180px;border:1px solid #1b2b3c;border-radius:3px;padding:2px 5px;font-size:12px" onkeydown="if(event.key==='Enter')saveGroupName(${i})">
     <span class="x" style="color:#1b2b3c" onclick="saveGroupName(${i})" title="Save">&#10003;</span>
     <span class="x" onclick="redraw()" title="Cancel">&#x2715;</span>`;
   document.getElementById('egnn-' + i).focus();
@@ -1668,12 +1740,19 @@ function editGroupName(i) {
 function saveGroupName(i) {
   const name = document.getElementById('egnn-' + i).value.trim();
   if (!name) return alert('Name required');
-  db.groupNames[i] = { name };
+  db.groupNames[i] = { name, color: db.groupNames[i].color || '#1b2b3c' };
   redraw();
 }
 function clearGroupNames() {
   if (!confirm('Clear all groups? This cannot be undone.')) return;
   db.groupNames = [];
+  redraw();
+}
+function setGroupNameColor(i, hex) {
+  db.groupNames[i].color = hex;
+  // Sync any groups currently using this name
+  const nm = db.groupNames[i].name;
+  db.groups.forEach(g => { if ((g.customName || '') === nm) g.color = hex; });
   redraw();
 }
 function renderGroupNames() {
@@ -1683,12 +1762,24 @@ function renderGroupNames() {
     el.innerHTML = '<span class="none-lbl">None added</span>';
     return;
   }
-  el.innerHTML = db.groupNames.map((a, i) => `
-    <span class="tag" id="gn-tag-${i}">
-      <span class="tag-name">${a.name}</span>
-      <span class="x" style="color:#1b2b3c;margin-left:3px" onclick="editGroupName(${i})" title="Edit">&#9998;</span>
-      <span class="x" onclick="removeGroupName(${i})">&#x2715;</span>
-    </span>`).join('');
+  el.innerHTML = db.groupNames.map((a, i) => {
+    const col = a.color || '#1b2b3c';
+    var swatches = GRP_COLORS.map(function(c) {
+      var active = col === c.hex;
+      var border = active ? '#1b2b3c' : 'rgba(0,0,0,0.15)';
+      var shadow = active ? '0 0 0 2px #fff, 0 0 0 4px ' + c.hex : 'none';
+      return '<span title="' + c.label + '" onclick="setGroupNameColor(' + i + ',\'' + c.hex + '\')" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:' + c.hex + ';border:2px solid ' + border + ';box-shadow:' + shadow + ';cursor:pointer;flex-shrink:0;vertical-align:middle"></span>';
+    }).join('');
+    return `<span class="tag" id="gn-tag-${i}" style="display:inline-flex;flex-direction:column;gap:5px;padding:6px 8px;align-items:flex-start;min-width:180px">
+      <span style="display:flex;align-items:center;gap:5px">
+        <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${col};flex-shrink:0;border:1px solid rgba(0,0,0,0.2)"></span>
+        <span class="tag-name" style="font-weight:bold">${a.name}</span>
+        <span class="x" style="color:#1b2b3c;margin-left:2px" onclick="editGroupName(${i})" title="Edit">&#9998;</span>
+        <span class="x" onclick="removeGroupName(${i})">&#x2715;</span>
+      </span>
+      <span style="display:flex;flex-wrap:wrap;gap:3px">${swatches}</span>
+    </span>`;
+  }).join('');
 }
 function mkGroupNameOpts(sel) {
   let opts = '<option value=""></option>';
@@ -1707,6 +1798,8 @@ function mkGrpLetterOpts(sel, defaultLetter) {
 }
 function setGrpName(gi, val) {
   db.groups[gi].customName = val;
+  const gn = (db.groupNames || []).find(a => a.name === val);
+  if (gn && gn.color) db.groups[gi].color = gn.color;
   redraw();
 }
 
