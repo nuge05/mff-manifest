@@ -173,6 +173,7 @@ select:focus{outline:none;border-color:#1b2b3c}
   .print-only{display:inline-block !important}
   /* Show plain text name in print, hide the select */
   .print-name{display:block !important;font-size:9.5px !important;color:#000 !important}
+  .col3-empty col:nth-child(4), .col3-empty th:nth-child(4), .col3-empty td:nth-child(4){display:none !important}
   .print-name.al{font-weight:bold !important}
 
   /* Counts row — equipment totals (one wide cell with 6 boxes) */
@@ -406,10 +407,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 <div class="panel active" id="tab-manifest">
   <div class="manifest-toolbar">
-    <div style="display:flex;background:#e8edf3;border-radius:4px;padding:2px;gap:2px;margin-right:8px">
-      <button id="mode-mff" onclick="setMode('MFF')" style="background:#1b2b3c;color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:bold;border-radius:3px">MFF</button>
-      <button id="mode-tandem" onclick="setMode('TANDEM')" style="background:transparent;color:#555;border:none;padding:4px 12px;font-size:12px;font-weight:bold;border-radius:3px">Tandem</button>
-    </div>
+
     <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:bold;color:#1b2b3c;margin-right:8px;user-select:none;cursor:pointer">
       <input type="checkbox" id="night-toggle" onchange="toggleNight(this.checked)" style="margin:0;cursor:pointer">
       Airland
@@ -417,7 +415,7 @@ select:focus{outline:none;border-color:#1b2b3c}
     <span style="display:inline-flex;align-items:center;gap:5px;background:#e8edf3;border:1px solid #c5cdd8;border-radius:4px;padding:4px 8px" id="add-grp-cluster">
       <span style="font-size:11px;color:#555;font-weight:bold;white-space:nowrap">Color:</span>
       <span id="grp-color-swatches" style="display:inline-flex;gap:3px;align-items:center"><span title="Default" onclick="selectNewGrpColor(this,'#1b2b3c')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1b2b3c;border:2px solid #111;box-shadow:0 0 0 2px #fff, 0 0 0 4px #1b2b3c;cursor:pointer;flex-shrink:0"></span><span title="Magenta" onclick="selectNewGrpColor(this,'#b0006e')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#b0006e;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Red" onclick="selectNewGrpColor(this,'#c0392b')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#c0392b;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Maroon" onclick="selectNewGrpColor(this,'#7a1428')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#7a1428;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Purple" onclick="selectNewGrpColor(this,'#6a2fa0')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#6a2fa0;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Dark Blue" onclick="selectNewGrpColor(this,'#1a3a8f')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1a3a8f;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Blue" onclick="selectNewGrpColor(this,'#1565c0')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1565c0;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Cyan" onclick="selectNewGrpColor(this,'#006e8f')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#006e8f;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Teal" onclick="selectNewGrpColor(this,'#00695c')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#00695c;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Green" onclick="selectNewGrpColor(this,'#1e7e34')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1e7e34;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span><span title="Dark Green" onclick="selectNewGrpColor(this,'#1b4d20')" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1b4d20;border:2px solid rgba(0,0,0,0.15);box-shadow:none;cursor:pointer;flex-shrink:0"></span></span>
-      <button class="add-grp" onclick="addGroup()" style="margin-left:2px">+ Add group</button>
+      <button class="add-grp" onclick="addGroup()" style="margin-left:4px">+ Add group</button>
     </span>
     <span style="font-size:12px;color:#888">Groups A – H max</span>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
@@ -461,9 +459,7 @@ const GRP_COLORS = [
   { label: 'Green',      hex: '#1e7e34' },
   { label: 'Dark Green', hex: '#1b4d20' },
 ];
-const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], groupNames:[], mffGroups:[], tandemGroups:[], mode:'MFF', night:false,
-  get groups() { return this.mode === 'TANDEM' ? this.tandemGroups : this.mffGroups; },
-  set groups(v) { if (this.mode === 'TANDEM') this.tandemGroups = v; else this.mffGroups = v; }
+const db  = { students:[], instructors:[], straps:[], flight1:[], ui:[], equipment:[], profiles:[], aircraft:[], groupNames:[], groups:[], night:false
 };
 
 // ── TABS ──────────────────────────────────────────────────
@@ -703,6 +699,8 @@ function moveGroupTo(gi, newIdxStr) {
 
 let _newGrpColor = '#1b2b3c'; // currently selected color for next new group
 
+
+
 function selectNewGrpColor(el, hex) {
   _newGrpColor = hex;
   var container = document.getElementById('grp-color-swatches');
@@ -717,7 +715,7 @@ function selectNewGrpColor(el, hex) {
 }
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
-  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','MTV3','','',''], pj: '', aj: '', colTypes: ['stu','inst','ui'], color: _newGrpColor });
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','MTV3','','',''], pj: '', aj: '', colTypes: ['stu','inst','ui','ui'], color: _newGrpColor });
   redraw();
 }
 
@@ -742,7 +740,7 @@ function slotWt(sl) {
   const tmWt = pWt(sl.tm, db.instructors) || pWt(sl.tm, db.flight1) || pWt(sl.tm, db.ui);
   // New colN fields (when set) — search all rosters
   const allWt = (name) => name ? (pWt(name, db.students) || pWt(name, db.instructors) || pWt(name, db.straps) || pWt(name, db.flight1) || pWt(name, db.ui) || 0) : 0;
-  const colSum = allWt(sl.col0) + allWt(sl.col1) + allWt(sl.col2);
+  const colSum = allWt(sl.col0) + allWt(sl.col1) + allWt(sl.col2) + allWt(sl.col3||'');
   return pWt(sl.stu, db.students) + instWt + uiWt + tmWt + pWt(sl.pass, db.students) + colSum;
 }
 function dutyDefaultEq(duty, boxes) {
@@ -946,7 +944,7 @@ function mkColTypeOpts(sel) {
 
 function setColType(gi, ci, type) {
   const g = db.groups[gi];
-  if (!g.colTypes) g.colTypes = ['stu','inst','ui'];
+  if (!g.colTypes || g.colTypes.length < 4) g.colTypes = ['stu','inst','ui','ui'];
   g.colTypes[ci] = type;
   // Clear any existing values in that column since the roster pool changed
   g.slots.forEach(sl => { sl['col' + ci] = ''; sl['col' + ci + 'AL'] = false; });
@@ -1103,27 +1101,14 @@ function toggleNight(on) {
   redraw();
 }
 
-function setMode(mode) {
-  db.mode = mode;
-  // Update button styles
-  const mffBtn = document.getElementById('mode-mff');
-  const tdBtn  = document.getElementById('mode-tandem');
-  if (mode === 'MFF') {
-    mffBtn.style.background = '#1b2b3c'; mffBtn.style.color = '#fff';
-    tdBtn.style.background = 'transparent'; tdBtn.style.color = '#555';
-  } else {
-    tdBtn.style.background = '#1b2b3c'; tdBtn.style.color = '#fff';
-    mffBtn.style.background = 'transparent'; mffBtn.style.color = '#555';
-  }
-  redraw();
-}
+// setMode retained for compatibility but no longer switches group pools
 
 function renderManifest() {
   // Migrate legacy slot fields to colN fields — runs once per slot, then marks done
   db.groups.forEach(g => {
-    const tandem = db.mode === 'TANDEM';
-    const defaults = tandem ? ['tm','pass','inst','ui'] : ['stu','inst','ui'];
-    if (!g.colTypes || g.colTypes.length !== defaults.length) g.colTypes = defaults.slice();
+    const defaults = ['stu','inst','ui','ui'];
+    if (!g.colTypes || g.colTypes.length < 3) g.colTypes = defaults.slice();
+    if (g.colTypes.length === 3) g.colTypes.push('ui'); // migrate 3-col to 4-col
     g.slots.forEach(sl => {
       if (sl._migrated) return; // already done
       defaults.forEach((legacyField, ci) => {
@@ -1168,8 +1153,7 @@ function renderManifest() {
       const nightInstCB = db.night && sl.inst ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.instAL?'checked':''} onchange="setF(${gi},${si},'instAL',this.checked)" style="margin:0;cursor:pointer">AL</label>${alBadge(sl.instAL)}` : '';
       const nightUiCB   = db.night && sl.ui   ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.uiAL?'checked':''}   onchange="setF(${gi},${si},'uiAL',this.checked)"   style="margin:0;cursor:pointer">AL</label>${alBadge(sl.uiAL)}` : '';
       const nightTmCB   = db.night && sl.tm   ? `<label style="display:inline-flex;align-items:center;gap:3px;margin-left:5px;font-size:10px;cursor:pointer"><input type="checkbox" ${sl.tmAL?'checked':''}   onchange="setF(${gi},${si},'tmAL',this.checked)"   style="margin:0;cursor:pointer">AL</label>${alBadge(sl.tmAL)}` : '';
-      const tandemMode = db.mode === 'TANDEM';
-      const colTypes = g.colTypes || (tandemMode ? ['tm','pass','inst','ui'] : ['stu','inst','ui']);
+      const colTypes = g.colTypes && g.colTypes.length === 4 ? g.colTypes : ['stu','inst','ui','ui'];
       const renderCol = (ci) => {
         const t = colTypes[ci];
         const fieldKey = 'col' + ci;
@@ -1235,6 +1219,7 @@ function renderManifest() {
           <span class="grp-letter">GRP</span>
           <select title="Click to change" style="font-size:14px;font-weight:bold;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 6px;margin-left:4px;width:auto;min-width:50px;max-width:110px" onchange="setGrpName(${gi},this.value)">${mkGrpLetterOpts(g.customName, g.letter)}</select>
 
+
           <span style="font-size:10px;color:#8ab4d4;margin-left:10px">PJ</span>
           <select style="font-size:10px;background:#2a4464;color:#fff;border:1px solid #4a6a8a;border-radius:3px;padding:1px 2px;margin-left:3px;max-width:80px" onchange="setGrpPJAJ(${gi},'pj',this.value)">${mkPJAJOpts(g.pj)}</select>
           <span style="font-size:10px;color:#8ab4d4;margin-left:6px">AJ</span>
@@ -1259,19 +1244,12 @@ function renderManifest() {
         </div>
       </div>
       <div style="overflow-x:auto">
-      <table style="min-width:400px">
+      <table style="min-width:400px" class="${g.slots.every(sl=>!sl.col3)?'col3-empty':''}">
         <colgroup>
-          ${db.mode === 'TANDEM' 
-            ? '<col style="width:24%"><col style="width:24%"><col style="width:24%"><col style="width:24%"><col style="width:4%">' 
-            : '<col style="width:30%"><col style="width:32%"><col style="width:34%"><col style="width:4%">'}
+          <col style="width:23%"><col style="width:23%"><col style="width:23%"><col style="width:27%"><col style="width:4%">
         </colgroup>
         <thead><tr>
-          ${(()=>{
-            const defaults = db.mode === 'TANDEM' ? ['tm','pass','inst','ui'] : ['stu','inst','ui'];
-            const types = g.colTypes && g.colTypes.length === defaults.length ? g.colTypes : defaults;
-            if (!g.colTypes || g.colTypes.length !== defaults.length) g.colTypes = defaults;
-            return types.map((t, ci) => `<th><select onchange="setColType(${gi},${ci},this.value)" style="font-weight:bold;font-size:11px;background:transparent;border:1px solid transparent;cursor:pointer;color:#1b2b3c;width:100%">${mkColTypeOpts(t)}</select></th>`).join('');
-          })()}
+          ${(g.colTypes||['stu','inst','ui','ui']).map((t,ci) => `<th><select onchange="setColType(${gi},${ci},this.value)" style="font-weight:bold;font-size:11px;background:transparent;border:1px solid transparent;cursor:pointer;color:#1b2b3c;width:100%">${mkColTypeOpts(t)}</select></th>`).join('')}
           <th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -1392,9 +1370,7 @@ function saveDB() {
       aircraft: db.aircraft,
       groupNames: db.groupNames,
       night: db.night,
-      mffGroups: db.mffGroups,
-      tandemGroups: db.tandemGroups,
-      mode: db.mode
+      groups: db.groups
     };
     localStorage.setItem('mff_db_current', JSON.stringify(snapshot));
   } catch(e) {}
@@ -1415,14 +1391,13 @@ function loadDB() {
     if (saved.aircraft)    db.aircraft    = saved.aircraft;
     if (saved.groupNames)  db.groupNames  = saved.groupNames;
     if (typeof saved.night === 'boolean') db.night = saved.night;
-    if (saved.mode)        db.mode        = saved.mode;
-    // Handle both old (single groups) and new (split) storage
-    if (saved.mffGroups)    db.mffGroups    = saved.mffGroups;
-    if (saved.tandemGroups) db.tandemGroups = saved.tandemGroups;
-    // Migration: if old 'groups' key exists, put it into the right bucket based on mode
-    if (saved.groups && !saved.mffGroups && !saved.tandemGroups) {
-      if (saved.mode === 'TANDEM') db.tandemGroups = saved.groups;
-      else db.mffGroups = saved.groups;
+    // Migration: handle old mffGroups/tandemGroups split format
+    if (saved.groups) {
+      db.groups = saved.groups;
+    } else if (saved.mffGroups || saved.tandemGroups) {
+      const mff = (saved.mffGroups || []).map(g => Object.assign({type:'MFF'}, g));
+      const tdm = (saved.tandemGroups || []).map(g => Object.assign({type:'TDM'}, g));
+      db.groups = [...mff, ...tdm];
     }
   } catch(e) {}
 }
@@ -1474,7 +1449,7 @@ function saveManifest() {
   const name = prompt('Name this manifest (e.g. Day 1 Lift 1, HAHO Evening):', 'Lift 1');
   if (name === null) return;
   const cleanName = name.trim() || 'Untitled';
-  const key = 'mff_manifest_' + date + '_' + db.mode + '_' + cleanName.replace(/[^a-zA-Z0-9]/g,'_');
+  const key = 'mff_manifest_' + date + '_' + cleanName.replace(/[^a-zA-Z0-9]/g,'_');
   // Embed computed weights in each slot so preview can show totals without needing rosters
   const groupsWithWt = JSON.parse(JSON.stringify(db.groups));
   groupsWithWt.forEach(g => {
@@ -1483,7 +1458,7 @@ function saveManifest() {
   const snapshot = {
     date,
     name:        cleanName,
-    mode:        db.mode,
+
     students:    JSON.parse(JSON.stringify(db.students)),
     instructors: JSON.parse(JSON.stringify(db.instructors)),
     straps:      JSON.parse(JSON.stringify(db.straps)),
@@ -1493,9 +1468,9 @@ function saveManifest() {
     groups:      groupsWithWt
   };
   const existing = localStorage.getItem(key);
-  if (existing && !confirm('A manifest named "' + cleanName + '" for ' + formatDate(date) + ' (' + db.mode + ') already exists. Overwrite it?')) return;
+  if (existing && !confirm('A manifest named "' + cleanName + '" for ' + formatDate(date) + ' already exists. Overwrite it?')) return;
   localStorage.setItem(key, JSON.stringify(snapshot));
-  alert('Manifest saved: "' + cleanName + '" for ' + formatDate(date) + ' (' + db.mode + ')');
+  alert('Manifest saved: "' + cleanName + '" for ' + formatDate(date) + '.');
   renderArchive();
 }
 
@@ -1511,13 +1486,15 @@ function loadManifest(key) {
   db.ui          = snap.ui          || [];
   db.equipment   = snap.equipment   || [];
   db.groupNames  = snap.groupNames  || [];
-  if (snap.mode) db.mode = snap.mode;
-  // Store into the correct bucket based on mode
-  const groups = snap.mffGroups || snap.tandemGroups || snap.groups || [];
-  if (db.mode === 'TANDEM') db.tandemGroups = groups;
-  else db.mffGroups = groups;
+  // Migration: handle old split mffGroups/tandemGroups format
+  if (snap.groups) {
+    db.groups = snap.groups;
+  } else if (snap.mffGroups || snap.tandemGroups) {
+    const mff = (snap.mffGroups || []).map(g => Object.assign({type:'MFF'}, g));
+    const tdm = (snap.tandemGroups || []).map(g => Object.assign({type:'TDM'}, g));
+    db.groups = [...mff, ...tdm];
+  }
   document.getElementById('manifest-date').value = snap.date || '';
-  setMode(db.mode);
   toggleArchive();
   redraw();
 }
@@ -1550,7 +1527,7 @@ function renderArchive() {
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee">
       <div>
         ${snap.name ? `<span style="font-weight:bold;font-size:13px">${snap.name}</span><span style="font-size:12px;color:#555;margin-left:8px">${d}</span>` : `<span style="font-weight:bold;font-size:13px">${d}</span>`}
-        <span style="font-size:10px;background:#1b2b3c;color:#fff;padding:1px 6px;border-radius:3px;margin-left:6px">${snap.mode || 'MFF'}</span>
+        ${(()=>{ const grps = snap.groups||[]; const mff = grps.filter(g=>(g.type||'MFF')==='MFF').length; const tdm = grps.filter(g=>g.type==='TDM').length; const parts=[]; if(mff) parts.push(mff+' MFF'); if(tdm) parts.push(tdm+' TDM'); return parts.length ? '<span style="font-size:10px;background:#1b2b3c;color:#fff;padding:1px 6px;border-radius:3px;margin-left:6px">'+parts.join(' · ')+'</span>' : ''; })()} 
         <span style="font-size:11px;color:#888;margin-left:8px">${grps} group${grps!==1?'s':''} · ${jmp} jumpers</span>
       </div>
       <div style="display:flex;gap:6px">
