@@ -1193,7 +1193,8 @@ function isPassOrTp(g, sl, colKey) {
   const ci = parseInt(colKey.replace('col',''));
   const colType = (g.colTypes || [])[ci];
   const duty = sl[colKey + 'Duty'] || colType;
-  return duty === 'pass' || duty === 'tp';
+  // Pass/passenger if: duty badge set to pass/tp, OR column type is pass/tp
+  return duty === 'pass' || duty === 'tp' || colType === 'pass' || colType === 'tp';
 }
 function renderManifest() {
   // Migrate legacy slot fields to colN fields — runs once per slot, then marks done
@@ -1389,9 +1390,9 @@ function renderManifest() {
               // airland = those marked AL
               const airland = db.night ? slots.reduce((b,sl)=>b+
                 (['col0AL','col1AL','col2AL','col3AL']).reduce((c,k)=>c+(sl[k]?1:0),0),0) : 0;
-              // jumpers = pax excluding tandem passengers (pass/tp duty)
+              // jumpers = pax excluding tandem passengers (pass/tp duty) and airland
               const jumpers = slots.reduce((b,sl)=>b+
-                (['col0','col1','col2','col3']).reduce((c,k)=>c+(sl[k]&&!isPassOrTp(g,sl,k)?1:0),0),0) - airland;
+                (['col0','col1','col2','col3']).reduce((c,k)=>c+(sl[k]&&!isPassOrTp(g,sl,k)&&!sl[k+'AL']?1:0),0),0);
               // canopies = jumpers excluding airland AND pass/tp
               const canopies = slots.reduce((b,sl)=>b+
                 (['col0','col1','col2','col3']).reduce((c,k)=>c+(sl[k]&&!sl[k+'AL']&&!isPassOrTp(g,sl,k)?1:0),0),0);
