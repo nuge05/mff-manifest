@@ -1220,6 +1220,14 @@ function renderManifest() {
         ['col0Eq','col1Eq','col2Eq','col3Eq'].forEach(f => { sl[f] = ''; });
         sl._eqMigrated = true;
       }
+      // One-time: reset eq overrides for pass/tp and ui slots to pick up new defaults
+      if (!sl._eqMigrated2) {
+        ['col0','col1','col2','col3'].forEach((colKey, ci) => {
+          const duty = sl[colKey + 'Duty'] || (g.colTypes || [])[ci] || '';
+          if (duty === 'pass' || duty === 'tp' || duty === 'ui') sl[colKey + 'Eq'] = '';
+        });
+        sl._eqMigrated2 = true;
+      }
       // Clear orphaned AL flags where the slot is empty (no jumper)
       ['col0','col1','col2','col3'].forEach(f => {
         if (!sl[f] && sl[f + 'AL']) sl[f + 'AL'] = false;
