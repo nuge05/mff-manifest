@@ -717,7 +717,7 @@ function selectNewGrpColor(el, hex) {
 }
 function addGroup() {
   if (db.groups.length >= 8) return alert('Maximum 8 groups (A–H)');
-  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','MTV3','','',''], pj: '', aj: '', colTypes: ['stu','inst','ui','ui'], color: _newGrpColor });
+  db.groups.push({ letter: LTR[db.groups.length], slots: Array.from({ length: 6 }, newSlot), mjLabel: 'MJ', nsLabel: 'NS', uiLabel: 'NS', eqBoxes: ['MJ','NS','MTV3','NS','',''], pj: '', aj: '', colTypes: ['stu','inst','ui','ui'], color: _newGrpColor });
   redraw();
 }
 
@@ -747,17 +747,18 @@ function slotWt(sl) {
 }
 function dutyDefaultEq(duty, boxes) {
   // Returns the default equipment label for a given duty
-  if (duty === 'stu')                          return boxes[0] || 'MJ';
-  if (duty === 'inst' || duty === 'ds' || duty === 'ui' || duty === 'jumper') return boxes[1] || 'NS';
-  if (duty === 'tm')                           return boxes[2] || 'MTV3';
-  if (duty === 'pass')                         return ''; // no equipment for passengers
+  if (duty === 'stu')                                     return boxes[0] || 'MJ';
+  if (duty === 'inst' || duty === 'ds' || duty === 'jumper') return boxes[1] || 'NS';
+  if (duty === 'ui')                                      return boxes[3] || 'NS';
+  if (duty === 'tm')                                      return boxes[2] || 'MTV3';
+  if (duty === 'pass' || duty === 'tp')                   return ''; // no equipment for passengers
   return '';
 }
 
 function getActiveEquipment(g) {
   // Returns array of {label, count} for every unique equipment in use in this group
   const types = g.colTypes || [];
-  const boxes = g.eqBoxes || ['','','','','',''];
+  const boxes = g.eqBoxes || ['MJ','NS','MTV3','NS','',''];
   const counts = {}; // label → count
   g.slots.forEach(sl => {
     ['col0','col1','col2','col3'].forEach((colKey, ci) => {
@@ -780,7 +781,7 @@ function getActiveEquipment(g) {
 function eqCountInGroup(g, label) {
   if (!label) return 0;
   const types = g.colTypes || [];
-  const boxes = g.eqBoxes || ['MJ','NS','MTV3','','',''];
+  const boxes = g.eqBoxes || ['MJ','NS','MTV3','NS','',''];
   let count = 0;
   g.slots.forEach(sl => {
     ['col0','col1','col2','col3'].forEach((colKey, ci) => {
@@ -819,7 +820,7 @@ function grpTot(g)  {
       // Fall back to group default based on duty
       const colType = types[ci] || '';
       const duty = sl[colKey + 'Duty'] || colType;
-      const boxes = g.eqBoxes || ['MJ','NS','MTV3','','',''];
+      const boxes = g.eqBoxes || ['MJ','NS','MTV3','NS','',''];
       eqSum += eqWt(dutyDefaultEq(duty, boxes));
     });
   });
@@ -1258,7 +1259,7 @@ function renderManifest() {
         const dutyBadge = val ? mkDutyBadge(gi, si, dutyKey, dutyVal) : '';
         // Equipment override dropdown — defaults based on duty
         const eqKey = fieldKey + 'Eq';
-        const boxes = g.eqBoxes || ['MJ','NS','MTV3','','',''];
+        const boxes = g.eqBoxes || ['MJ','NS','MTV3','NS','',''];
         const slDuty = sl[fieldKey + 'Duty'] || t;
         const groupEqDefault = dutyDefaultEq(slDuty, boxes);
         const eqVal = sl[eqKey] || '';
