@@ -1200,7 +1200,7 @@ function renderManifest() {
           if (t === 'stu') {
             const p = db.students.find(x => x.name === val);
             const lastName = p ? shortStuLabel(p) : getLastName(val);
-            const num = p && p.rosterNum ? p.rosterNum : '';
+            const num = p ? (p.rosterNum || (db.students.indexOf(p) + 1)) : '';
             return num ? num + ' ' + lastName : lastName;
           }
           // For non-student columns, search all relevant rosters to find the person object
@@ -1212,7 +1212,7 @@ function renderManifest() {
           return getLastName(val);
         })();
         const printName = printShortName + (isAL ? ' AL' : '');
-        const printCell = val ? `<div class="print-name" style="display:none;font-size:9.5px;font-weight:${fieldKey==='col0'?'bold':'normal'};color:#000">${printName}</div>` : '';
+        const printCell = val ? `<div class="print-name" style="font-size:9.5px;font-weight:${fieldKey==='col0'?'bold':'normal'};color:#000">${printName}</div>` : '';
         return `<td><select class="screen-only" onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${printCell}${dutyBadge}${eqBadge}${extraCB}</td>`;
       };
       const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
