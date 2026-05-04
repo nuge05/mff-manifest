@@ -105,6 +105,8 @@ select:focus{outline:none;border-color:#1b2b3c}
 .print-only{display:none}
 .print-name{display:none}
 .screen-only{display:inline-block}
+.col-search{width:100%;box-sizing:border-box;border:1px solid #c5cdd8;border-radius:3px;padding:2px 4px;font-size:11px;background:#fff;color:#111;outline:none}
+.col-search:focus{border-color:#1565c0;box-shadow:0 0 0 2px rgba(21,101,192,0.15)}
 
 @media print{
   @page { size: letter portrait; margin: 0.3in; }
@@ -951,6 +953,88 @@ function setColType(gi, ci, type) {
   redraw();
 }
 
+// ── SEARCH HELPERS ──────────────────────────────────────
+function mkColDatalist(type, sel, gi, fieldKey, si) {
+  const used = colUsedInGroup(gi, fieldKey, si);
+  const opt = (name, label) => '<option value="' + label + '" data-name="' + name + '">';
+  const mkForList = (list, getLabel) =>
+    list.filter(p => p.name === sel || !used.has(p.name))
+        .map(p => opt(p.name, getLabel(p))).join('');
+  let opts = '';
+  if (type === 'stu') {
+    opts += mkForList(db.students, p => (p.rosterNum || (db.students.indexOf(p)+1)) + '. ' + shortStuLabel(p));
+  } else if (type === 'inst') {
+    opts += mkForList(db.instructors, p => shortLabel(p, db.instructors));
+    opts += mkForList(db.flight1 || [], p => shortLabel(p, db.flight1));
+    opts += mkForList(db.ui || [], p => shortLabel(p, db.ui));
+  } else if (type === 'ui') {
+    opts += mkForList(db.instructors, p => shortLabel(p, db.instructors));
+    opts += mkForList(db.straps, p => shortLabel(p, db.straps));
+    opts += mkForList(db.flight1 || [], p => shortLabel(p, db.flight1));
+    opts += mkForList(db.ui || [], p => shortLabel(p, db.ui));
+  } else {
+    opts += mkForList(db.students, p => (p.rosterNum || (db.students.indexOf(p)+1)) + '. ' + shortStuLabel(p));
+    opts += mkForList(db.instructors, p => shortLabel(p, db.instructors));
+    opts += mkForList(db.straps, p => shortLabel(p, db.straps));
+    opts += mkForList(db.flight1 || [], p => shortLabel(p, db.flight1));
+    opts += mkForList(db.ui || [], p => shortLabel(p, db.ui));
+  }
+  return opts;
+}
+
+function mkColDisplayLabel(type, name) {
+  // Return the display label for a stored name value
+  const allLists = [
+    { list: db.students, getLabel: p => (p.rosterNum || (db.students.indexOf(p)+1)) + '. ' + shortStuLabel(p) },
+    { list: db.instructors, getLabel: p => shortLabel(p, db.instructors) },
+    { list: db.straps, getLabel: p => shortLabel(p, db.straps) },
+    { list: db.flight1 || [], getLabel: p => shortLabel(p, db.flight1) },
+    { list: db.ui || [], getLabel: p => shortLabel(p, db.ui) },
+  ];
+  for (const { list, getLabel } of allLists) {
+    const p = list.find(x => x.name === name);
+    if (p) return getLabel(p);
+  }
+  return name;
+}
+
+function handleColSearch(input, gi, si, fieldKey, type) {
+  const typed = input.value.trim();
+  if (!typed) { setF(gi, si, fieldKey, ''); return; }
+  // Try to match typed text against datalist labels
+  const allLists = [
+    { list: db.students, getLabel: p => (p.rosterNum || (db.students.indexOf(p)+1)) + '. ' + shortStuLabel(p) },
+    { list: db.instructors, getLabel: p => shortLabel(p, db.instructors) },
+    { list: db.straps, getLabel: p => shortLabel(p, db.straps) },
+    { list: db.flight1 || [], getLabel: p => shortLabel(p, db.flight1) },
+    { list: db.ui || [], getLabel: p => shortLabel(p, db.ui) },
+  ];
+  for (const { list, getLabel } of allLists) {
+    const p = list.find(x => getLabel(x) === typed);
+    if (p) { setF(gi, si, fieldKey, p.name); return; }
+  }
+  // No exact match yet — don't save, wait for blur or exact pick
+}
+
+function handleColBlur(input, gi, si, fieldKey, type) {
+  const typed = input.value.trim();
+  if (!typed) { setF(gi, si, fieldKey, ''); return; }
+  const allLists = [
+    { list: db.students, getLabel: p => (p.rosterNum || (db.students.indexOf(p)+1)) + '. ' + shortStuLabel(p) },
+    { list: db.instructors, getLabel: p => shortLabel(p, db.instructors) },
+    { list: db.straps, getLabel: p => shortLabel(p, db.straps) },
+    { list: db.flight1 || [], getLabel: p => shortLabel(p, db.flight1) },
+    { list: db.ui || [], getLabel: p => shortLabel(p, db.ui) },
+  ];
+  for (const { list, getLabel } of allLists) {
+    const p = list.find(x => getLabel(x) === typed);
+    if (p) { setF(gi, si, fieldKey, p.name); return; }
+  }
+  // No match — restore previous display label or clear
+  const cur = db.groups[gi].slots[si][fieldKey];
+  input.value = cur ? mkColDisplayLabel(type, cur) : '';
+}
+
 function mkColOpts(type, sel, gi, fieldKey, si) {
   // Build options based on column type
   // Track names already used in this group across all 3 columns + tm/pass/inst/ui legacy
@@ -1197,7 +1281,23 @@ function renderManifest() {
         })();
         const printName = printShortName + (isAL ? ' AL' : '');
         const printCell = val ? `<div class="print-name" style="font-size:9.5px;font-weight:${fieldKey==='col0'?'bold':'normal'};color:#000">${printName}</div>` : '';
-        return `<td><select class="screen-only" onchange="setF(${gi},${si},'${fieldKey}',this.value)">${opts}</select>${printCell}${dutyBadge}${eqBadge}${extraCB}</td>`;
+        const dlId = 'dl-' + gi + '-' + si + '-' + fieldKey;
+        // Build datalist options (value=name, label=display label)
+        const dlOpts = mkColDatalist(t, val, gi, fieldKey, si);
+        // Display label for current value
+        const dispLabel = val ? (mkColDisplayLabel(t, val) || val) : '';
+        return `<td>
+          <div class="screen-only" style="position:relative">
+            <input class="col-search" list="${dlId}" value="${dispLabel.replace(/"/g,'&quot;')}"
+              placeholder="Search…"
+              oninput="handleColSearch(this,${gi},${si},'${fieldKey}','${t}')"
+              onchange="handleColSearch(this,${gi},${si},'${fieldKey}','${t}')"
+              onblur="handleColBlur(this,${gi},${si},'${fieldKey}','${t}')"
+              onfocus="this.select()"
+              autocomplete="off">
+            <datalist id="${dlId}">${dlOpts}</datalist>
+          </div>
+          ${printCell}${dutyBadge}${eqBadge}${extraCB}</td>`;
       };
       const colsHTML = colTypes.map((_, ci) => renderCol(ci)).join('');
       return `<tr>
