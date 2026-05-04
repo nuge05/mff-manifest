@@ -903,8 +903,8 @@ function shortStuLabel(p) {
   return last;
 }
 function mkDutyBadge(gi, si, dutyKey, dutyVal) {
-  const labels = {stu:'Student',inst:'Instructor',ui:'UI/VID/Strap',tm:'TM',pass:'Pass',ds:'DS',jumper:'Jumper'};
-  const types = ['stu','inst','ui','tm','pass','ds','jumper'];
+  const labels = {stu:'Student',inst:'Instructor',ui:'UI/VID/Strap',tm:'TM',pass:'Pass',tp:'TD Pass',ds:'DS',jumper:'Jumper'};
+  const types = ['stu','inst','ui','tm','pass','tp','ds','jumper'];
   let opts = types.map(function(d) {
     return '<option value="' + d + '"' + (d === dutyVal ? ' selected' : '') + '>' + labels[d] + '</option>';
   }).join('');
@@ -937,6 +937,7 @@ function mkColTypeOpts(sel) {
     { val: 'ui',     label: 'UI/VID/Strap' },
     { val: 'tm',     label: 'TM' },
     { val: 'pass',   label: 'Pass' },
+    { val: 'tp',     label: 'TD Pass' },
     { val: 'ds',     label: 'DS' },
     { val: 'safety', label: 'Safety' },
     { val: 'jumper', label: 'Jumper' }
@@ -1187,6 +1188,13 @@ function toggleNight(on) {
 
 // setMode retained for compatibility but no longer switches group pools
 
+
+function isPassOrTp(g, sl, colKey) {
+  const ci = parseInt(colKey.replace('col',''));
+  const colType = (g.colTypes || [])[ci];
+  const duty = sl[colKey + 'Duty'] || colType;
+  return duty === 'pass' || duty === 'tp';
+}
 function renderManifest() {
   // Migrate legacy slot fields to colN fields — runs once per slot, then marks done
   db.groups.forEach(g => {
@@ -1375,29 +1383,26 @@ function renderManifest() {
           <tr>
             <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="4">${(()=>{
               const slots = g.slots;
-              const paxAll = slots.reduce((b,sl)=>b+(sl.stu?1:0)+(sl.inst?1:0)+(sl.ui?1:0)+(sl.tm?1:0)+(sl.pass?1:0)+(sl.col0?1:0)+(sl.col1?1:0)+(sl.col2?1:0),0);
-              const airland = db.night ? slots.reduce((b,sl)=>b+(sl.instAL?1:0)+(sl.uiAL?1:0)+(sl.tmAL?1:0)+(sl.col0AL?1:0)+(sl.col1AL?1:0)+(sl.col2AL?1:0),0) : 0;
-              const jumpers = paxAll - airland;
-              const isPass = (sl, colKey) => {
-                // Pass if column type is 'pass' OR duty is set to 'pass'
-                const ci = parseInt(colKey.replace('col',''));
-                const colType = (g.colTypes || [])[ci];
-                const duty = sl[colKey + 'Duty'] || colType;
-                return duty === 'pass';
-              };
-              const canopies = slots.reduce((b,sl)=>b+(
-                (sl.stu?1:0) +
-                (sl.inst&&!sl.instAL?1:0) +
-                (sl.ui&&!sl.uiAL?1:0) +
-                (sl.tm&&!sl.tmAL?1:0) +
-                (sl.col0&&!sl.col0AL&&!isPass(sl,'col0')?1:0) +
-                (sl.col1&&!sl.col1AL&&!isPass(sl,'col1')?1:0) +
-                (sl.col2&&!sl.col2AL&&!isPass(sl,'col2')?1:0)
-              ),0);
+              // paxAll = everyone in a slot (including tandem passengers)
+              const paxAll = slots.reduce((b,sl)=>b+
+                (['col0','col1','col2','col3']).reduce((c,k)=>c+(sl[k]?1:0),0),0);
+              // airland = those marked AL
+              const airland = db.night ? slots.reduce((b,sl)=>b+
+                (['col0AL','col1AL','col2AL','col3AL']).reduce((c,k)=>c+(sl[k]?1:0),0),0) : 0;
+              // jumpers = pax excluding tandem passengers (pass/tp duty)
+              const jumpers = slots.reduce((b,sl)=>b+
+                (['col0','col1','col2','col3']).reduce((c,k)=>c+(sl[k]&&!isPassOrTp(g,sl,k)?1:0),0),0) - airland;
+              // canopies = jumpers excluding airland AND pass/tp
+              const canopies = slots.reduce((b,sl)=>b+
+                (['col0','col1','col2','col3']).reduce((c,k)=>c+(sl[k]&&!sl[k+'AL']&&!isPassOrTp(g,sl,k)?1:0),0),0);
+              const passengers = paxAll - jumpers - airland;
               if (db.night) {
                 return `Pax: ${paxAll} &nbsp;·&nbsp; Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Airland: ${airland} &nbsp;·&nbsp; Wt: ${tot} lbs`;
               }
-              return `Jumpers: ${paxAll} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Wt: ${tot} lbs`;
+              if (passengers > 0) {
+                return `Jumpers: ${jumpers} &nbsp;·&nbsp; Passengers: ${passengers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Wt: ${tot} lbs`;
+              }
+              return `Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Wt: ${tot} lbs`;
             })()}</td>
           </tr>
         </tfoot>
@@ -1419,20 +1424,11 @@ function updateSummary() {
     jumpers += jumperCnt(g);
   });
   document.getElementById('s-grps').textContent    = db.groups.length;
-  const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => b + (sl.stu?1:0) + (sl.inst?1:0) + (sl.ui?1:0) + (sl.tm?1:0) + (sl.pass?1:0) + (sl.col0?1:0) + (sl.col1?1:0) + (sl.col2?1:0), 0), 0);
-  // Canopies: MFF — one per jumper; Tandem — TM counts for 1 (shared with pass), inst=1, ui=1 (pass NOT counted)
-  const totalCanopies = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) => {
-    const isPassCol = (colKey) => {
-      const ci = parseInt(colKey.replace('col',''));
-      const colType = (g.colTypes || [])[ci];
-      const duty = sl[colKey + 'Duty'] || colType;
-      return duty === 'pass';
-    };
-    return b + (sl.stu?1:0) + (sl.inst&&!sl.instAL?1:0) + (sl.ui&&!sl.uiAL?1:0) + (sl.tm&&!sl.tmAL?1:0) +
-      (sl.col0&&!sl.col0AL&&!isPassCol('col0')?1:0) +
-      (sl.col1&&!sl.col1AL&&!isPassCol('col1')?1:0) +
-      (sl.col2&&!sl.col2AL&&!isPassCol('col2')?1:0);
-  }, 0), 0);
+  const COLS = ['col0','col1','col2','col3'];
+  const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) =>
+    b + COLS.reduce((c,k) => c + (sl[k] && !isPassOrTp(g,sl,k) ? 1 : 0), 0), 0), 0);
+  const totalCanopies = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) =>
+    b + COLS.reduce((c,k) => c + (sl[k] && !sl[k+'AL'] && !isPassOrTp(g,sl,k) ? 1 : 0), 0), 0), 0);
   document.getElementById('s-jumpers').textContent = totalJumpers;
   document.getElementById('s-canopies').textContent = totalCanopies;
   document.getElementById('s-mj').textContent      = mj;
