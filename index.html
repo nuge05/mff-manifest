@@ -111,6 +111,7 @@ select:focus{outline:none;border-color:#1b2b3c}
 
 @media print{
   @page { size: letter portrait; margin: 0.3in; }
+  @page.landscape-mode { size: letter landscape; margin: 0.3in; }
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
   body{background:#fff;margin:0;font-family:Arial,sans-serif;font-size:10px;color:#111}
   .hdr,.tab-bar,.summary,.hdr-btns,.grp-hd-btns,.manifest-toolbar,.add-row,.eq-add-row,
@@ -175,8 +176,9 @@ select:focus{outline:none;border-color:#1b2b3c}
   .screen-only{display:none !important}
   .print-only{display:inline-block !important}
   /* Show plain text name in print, hide the select */
-  .print-name{display:block !important;font-size:9.5px !important;color:#000 !important}
+  .print-name{display:block !important;font-size:8.5px !important;color:#000 !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
   .col3-empty col:nth-child(4), .col3-empty th:nth-child(4), .col3-empty td:nth-child(4){display:none !important}
+  table col:nth-child(5), table th:nth-child(5), table td:nth-child(5){display:none !important}
   .print-name.al{font-weight:bold !important}
 
   /* Counts row — equipment totals (one wide cell with 6 boxes) */
@@ -425,7 +427,7 @@ select:focus{outline:none;border-color:#1b2b3c}
       <label style="font-size:12px;color:#555;font-weight:bold">Date:</label>
       <input type="date" id="manifest-date" style="font-size:12px;border:1px solid #bbb;border-radius:3px;padding:4px 7px;background:#fff;color:#111" onchange="renderGroups();updateSummary()">
     </div>
-    <button onclick="printManifest()">&#128438; Print manifest</button>
+    <label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;margin-right:8px;cursor:pointer"><input type="checkbox" id="print-landscape" style="cursor:pointer"> Landscape</label><button onclick="printManifest()">&#128438; Print manifest</button>
     <button onclick="saveManifest()" style="background:#1b2b3c;color:#fff;border-color:#1b2b3c">&#128190; Save</button>
     <button onclick="toggleArchive()">&#128193; Archives</button>
 
@@ -1363,9 +1365,9 @@ function renderManifest() {
         </div>
       </div>
       <div style="overflow-x:auto">
-      <table style="min-width:400px" class="${g.slots.every(sl=>!sl.col3)?'col3-empty':''}">
+      <table style="min-width:400px;table-layout:fixed;width:100%" class="${g.slots.every(sl=>!sl.col3)?'col3-empty':''}">
         <colgroup>
-          <col style="width:23%"><col style="width:23%"><col style="width:23%"><col style="width:27%"><col style="width:4%">
+          <col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:0">
         </colgroup>
         <thead><tr>
           ${(g.colTypes||['stu','inst','ui','ui']).map((t,ci) => `<th><select onchange="setColType(${gi},${ci},this.value)" style="font-weight:bold;font-size:11px;background:transparent;border:1px solid transparent;cursor:pointer;color:#1b2b3c;width:100%">${mkColTypeOpts(t)}</select></th>`).join('')}
@@ -1531,6 +1533,18 @@ if (!db.equipment.length) db.equipment = [
 redraw();
 
 function printManifest() {
+  // Apply landscape/portrait based on checkbox
+  const landscape = document.getElementById('print-landscape').checked;
+  let pageStyle = document.getElementById('dynamic-page-style');
+  if (!pageStyle) {
+    pageStyle = document.createElement('style');
+    pageStyle.id = 'dynamic-page-style';
+    document.head.appendChild(pageStyle);
+  }
+  pageStyle.textContent = landscape
+    ? '@media print { @page { size: letter landscape; margin: 0.3in; } .print-page { grid-template-columns: 1fr 1fr 1fr; } }'
+    : '@media print { @page { size: letter portrait; margin: 0.3in; } .print-page { grid-template-columns: 1fr 1fr; } }';
+
   // Build a hidden print container with groups split into pages of 6
   let existing = document.getElementById('print-container');
   if (existing) existing.remove();
@@ -1541,10 +1555,11 @@ function printManifest() {
   const grpEls = Array.from(document.querySelectorAll('#grid .grp'));
   if (!grpEls.length) { alert('No groups to print.'); return; }
 
-  for (let i = 0; i < grpEls.length; i += 6) {
+  const perPage = landscape ? 6 : 4;
+  for (let i = 0; i < grpEls.length; i += perPage) {
     const page = document.createElement('div');
     page.className = 'print-page';
-    grpEls.slice(i, i + 6).forEach(g => page.appendChild(g.cloneNode(true)));
+    grpEls.slice(i, i + perPage).forEach(g => page.appendChild(g.cloneNode(true)));
     container.appendChild(page);
   }
 
