@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -145,38 +144,29 @@ select:focus{outline:none;border-color:#1b2b3c}
   .grp-hd > div > div{display:inline-flex !important;flex-direction:row !important;gap:3px !important;align-items:center}
   .grp-hd > div > div + div{margin-left:6px}
 
-  /* Column headers — white bg, bold black text with bottom rule for reliability */
-  thead th{background:#fff !important;color:#000 !important;font-weight:900 !important;font-size:10px !important;padding:5px 4px;border-right:1px solid #000;border-bottom:2.5px solid #000;text-align:left;text-transform:uppercase;letter-spacing:0.3px}
+  /* Column headers */
+  thead th{background:#fff !important;color:#000 !important;font-weight:900 !important;font-size:8px !important;padding:3px 2px;border-right:1px solid #000;border-bottom:2px solid #000;text-align:left;text-transform:uppercase;overflow:hidden}
   thead th:last-child{border-right:none}
-  thead th select{appearance:none !important;-webkit-appearance:none !important;border:none !important;background:transparent !important;color:#000 !important;font-weight:900 !important;font-size:10px !important;padding:0 !important;pointer-events:none;width:100%}
+  thead th select{appearance:none !important;-webkit-appearance:none !important;border:none !important;background:transparent !important;color:#000 !important;font-weight:900 !important;font-size:8px !important;padding:0 !important;pointer-events:none;width:100%;overflow:hidden;text-overflow:ellipsis}
 
-  /* Body rows — alternating shading */
+  /* Body rows */
   tbody tr:nth-child(even){background:#f0f3f8 !important}
   tbody tr:nth-child(odd){background:#fff !important}
-  tbody td{padding:3px 5px;border-right:1px solid #ccc;border-bottom:1px solid #e0e4ec;font-size:9.5px;white-space:nowrap;vertical-align:middle;color:#000 !important}
+  tbody td{padding:2px 3px;border-right:1px solid #ccc;border-bottom:1px solid #e0e4ec;font-size:8px;vertical-align:middle;color:#000 !important;overflow:hidden;max-width:0}
   tbody td:last-child{border-right:none}
   tbody td:first-child{font-weight:bold;color:#1b2b3c !important}
 
-  /* Body dropdowns — name selects as plain text */
-  tbody select{border:none;appearance:none;-webkit-appearance:none;font-size:9.5px;padding:0;pointer-events:none;width:100%;background:transparent !important;color:#000 !important;font-weight:inherit;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  /* Hide the small duty and equipment override dropdowns in print */
-  tbody td select[title="Jump duty"],
-  tbody td select[title="Equipment override"]{display:none !important}
-  /* Show the plain-text AL marker in print */
+  /* Body dropdowns */
+  tbody select{display:none !important}
   .al-print{display:inline !important}
-  /* AL marker as plain bold text inside the cell */
-  .al-text{display:inline !important;font-weight:900 !important;color:#c0392b !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;font-size:9px !important;margin-left:2px !important;background:transparent !important;border:none !important;padding:0 !important;letter-spacing:0 !important}
-
-  /* Cells stay clipped to prevent column overflow */
-  tbody td{overflow:hidden !important;text-overflow:clip !important}
-  /* Hide the styled AL badge in print since the text marker handles it */
+  .al-text{display:inline !important;font-weight:900 !important;color:#c0392b !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;font-size:8px !important;margin-left:2px !important;background:transparent !important;border:none !important;padding:0 !important}
   .al-badge{display:none !important}
 
   /* Hide screen-only elements in print, show print-only elements */
   .screen-only{display:none !important}
   .print-only{display:inline-block !important}
-  /* Show plain text name in print, hide the select */
-  .print-name{display:block !important;font-size:8.5px !important;color:#000 !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+  /* Show plain text name in print */
+  .print-name{display:block !important;font-size:8px !important;color:#000 !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;max-width:100%}
   .col3-empty col:nth-child(4), .col3-empty th:nth-child(4), .col3-empty td:nth-child(4){display:none !important}
   table col:nth-child(5), table th:nth-child(5), table td:nth-child(5){display:none !important}
   .print-name.al{font-weight:bold !important}
