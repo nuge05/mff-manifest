@@ -1395,18 +1395,24 @@ function renderManifest() {
             <td style="font-weight:bold;padding:5px 8px;white-space:nowrap" colspan="4">${(()=>{
               const slots = g.slots;
               const COLS = ['col0','col1','col2','col3'];
-              // total = everyone on the load
-              const total = slots.reduce((b,sl)=>b+COLS.reduce((c,k)=>c+(sl[k]?1:0),0),0);
-              // airland = those marked AL
+              // airland = support staff on aircraft, not jumping
               const airland = slots.reduce((b,sl)=>b+
                 ['col0AL','col1AL','col2AL','col3AL'].reduce((c,k)=>c+(sl[k]?1:0),0),0);
-              // jumpers = total minus airland minus pass/tp
+              // pass/tp count = tandem passengers (exit aircraft but share canopy with TM)
+              const passengers = slots.reduce((b,sl)=>b+
+                COLS.reduce((c,k)=>c+(sl[k]&&!sl[k+'AL']&&isPassOrTp(g,sl,k)?1:0),0),0);
+              // jumpers = everyone who exits (non-airland), including TP passengers
               const jumpers = slots.reduce((b,sl)=>b+
-                COLS.reduce((c,k)=>c+(sl[k]&&!sl[k+'AL']&&!isPassOrTp(g,sl,k)?1:0),0),0);
-              // canopies = jumpers (already excludes AL and pass/tp)
-              const canopies = jumpers;
+                COLS.reduce((c,k)=>c+(sl[k]&&!sl[k+'AL']?1:0),0),0);
+              // canopies = jumpers minus tandem passengers (TM canopy covers TP)
+              const canopies = jumpers - passengers;
+              // total = everyone on the aircraft
+              const total = slots.reduce((b,sl)=>b+COLS.reduce((c,k)=>c+(sl[k]?1:0),0),0);
               if (airland > 0) {
                 return `Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Airland: ${airland} &nbsp;·&nbsp; Total: ${total} &nbsp;·&nbsp; Wt: ${tot} lbs`;
+              }
+              if (passengers > 0) {
+                return `Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Total: ${total} &nbsp;·&nbsp; Wt: ${tot} lbs`;
               }
               return `Jumpers: ${jumpers} &nbsp;·&nbsp; Canopies: ${canopies} &nbsp;·&nbsp; Wt: ${tot} lbs`;
             })()}</td>
@@ -1431,11 +1437,13 @@ function updateSummary() {
   });
   document.getElementById('s-grps').textContent    = db.groups.length;
   const COLS = ['col0','col1','col2','col3'];
-  // Jumpers = everyone minus airland minus pass/tp
+  // Jumpers = everyone who exits (non-airland), including TP passengers
   const totalJumpers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) =>
-    b + COLS.reduce((c,k) => c + (sl[k] && !sl[k+'AL'] && !isPassOrTp(g,sl,k) ? 1 : 0), 0), 0), 0);
-  // Canopies = same as jumpers
-  const totalCanopies = totalJumpers;
+    b + COLS.reduce((c,k) => c + (sl[k] && !sl[k+'AL'] ? 1 : 0), 0), 0), 0);
+  // Canopies = jumpers minus tandem passengers
+  const totalPassengers = db.groups.reduce((a, g) => a + g.slots.reduce((b, sl) =>
+    b + COLS.reduce((c,k) => c + (sl[k] && !sl[k+'AL'] && isPassOrTp(g,sl,k) ? 1 : 0), 0), 0), 0);
+  const totalCanopies = totalJumpers - totalPassengers;
   document.getElementById('s-jumpers').textContent = totalJumpers;
   document.getElementById('s-canopies').textContent = totalCanopies;
   document.getElementById('s-mj').textContent      = mj;
